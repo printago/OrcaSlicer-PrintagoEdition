@@ -13,7 +13,7 @@ void PrintagoSession::on_run()
 {
     // Set suggested timeout settings for the websocket
     // ... other setup ...
-    ws_.async_accept(std::bind(&PrintagoSession::on_accept, shared_from_this(), std::placeholders::_1));
+    ws_.async_accept([capture0 = shared_from_this()](auto&& PH1) { capture0->on_accept(std::forward<decltype(PH1)>(PH1)); });
 }
 
 void PrintagoSession::on_accept(beast::error_code ec)
@@ -26,7 +26,9 @@ void PrintagoSession::on_accept(beast::error_code ec)
 
 void PrintagoSession::do_read()
 {
-    ws_.async_read(buffer_, std::bind(&PrintagoSession::on_read, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+    ws_.async_read(buffer_, [capture0 = shared_from_this()](auto&& PH1, auto&& PH2) {
+        capture0->on_read(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
+    });
 }
 
 void PrintagoSession::on_read(beast::error_code ec, std::size_t bytes_transferred)
@@ -34,7 +36,16 @@ void PrintagoSession::on_read(beast::error_code ec, std::size_t bytes_transferre
     if (ec)
         return fail(ec, "read");
 
-    ws_.async_write(buffer_.data(), std::bind(&PrintagoSession::on_write, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+    // Process the received message (contained in buffer_)
+    // For example, echo the message back
+    // buffer_.data() contains the received data
+
+    // Send response back to the client
+    ws_.async_write(buffer_.data(), [self = shared_from_this()](beast::error_code ec, std::size_t length) {
+        if (ec)
+            return fail(ec, "write");
+        self->do_read(); // Continue to read next messages
+    });
 }
 
 void PrintagoSession::on_write(beast::error_code ec, std::size_t bytes_transferred)
@@ -72,7 +83,9 @@ void PrintagoServer::start() { do_accept(); }
 void PrintagoServer::do_accept()
 {
     acceptor_.async_accept(net::make_strand(ioc_),
-                           std::bind(&PrintagoServer::on_accept, shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+                           [capture0 = shared_from_this()](auto&& PH1, auto&& PH2) {
+                               capture0->on_accept(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
+                           });
 }
 
 void PrintagoServer::on_accept(beast::error_code ec, tcp::socket socket)
@@ -87,12 +100,13 @@ void PrintagoServer::on_accept(beast::error_code ec, tcp::socket socket)
     }
 }
 
-void PrintagoServer::handle_reconnect()
-{
+void PrintagoServer::handle_reconnect() {
     if (reconnection_delay_ < 120) {
         reconnection_delay_ *= 2; // Exponential back-off
     }
-    net::steady_timer timer(ioc_, std::chrono::seconds(reconnection_delay_));
-    timer.wait(); // Blocking wait
-    do_accept();  // Try to accept again
+    auto timer = std::make_shared<net::steady_timer>(ioc_, std::chrono::seconds(reconnection_delay_));
+    timer->async_wait([capture0 = shared_from_this(), timer](const beast::error_code&) {
+        capture0->do_accept();
+    });
 }
+

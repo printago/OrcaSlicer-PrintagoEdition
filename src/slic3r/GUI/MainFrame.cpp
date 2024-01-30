@@ -79,6 +79,8 @@
 #endif // _WIN32
 #include <slic3r/GUI/CreatePresetsDialog.hpp>
 
+#include "PrintagoServer.hpp"
+
 
 namespace Slic3r {
 namespace GUI {
@@ -607,6 +609,21 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
         evt.Skip();
     });
 
+    // TODO: move this to somewhere else if we don't need to init in the UI.
+    try {
+        boost::asio::io_context _io_context;
+
+        // Create endpoint for localhost on port 33647
+        auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address("127.0.0.1"), 33647);
+
+        PrintagoServer server(_io_context, endpoint);
+        _io_context.run();
+        server.start();
+        
+    } catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << '\n';
+    }
+
 #ifdef _MSW_DARK_MODE
     wxGetApp().UpdateDarkUIWin(this);
 #endif // _MSW_DARK_MODE
@@ -1078,14 +1095,13 @@ void MainFrame::init_tabpanel() {
     m_calibration->SetBackgroundColour(*wxWHITE);
     m_tabpanel->AddPage(m_calibration, _L("Calibration"), std::string("tab_monitor_active"), std::string("tab_monitor_active"), false);
 
-    wxString printago_url = "http://localhost:3000/testInterface.html";//"https://d1rqir9uohfia0.cloudfront.net/bambu";//
-    m_printago = new PrintagoPanel(m_tabpanel, &printago_url);
-    Bind(EVT_LOAD_PRINTAGO_URL, [this](wxCommandEvent &evt) {
-        wxString url = evt.GetString();
-        m_printago->load_url(url);
-    });
-    
-    m_tabpanel->AddPage(m_printago, _L("Printago"), std::string("printago_small"), std::string("printago_small"));
+    // wxString printago_url = "http://localhost:3000/testInterface.html";//"https://d1rqir9uohfia0.cloudfront.net/bambu";//
+    // m_printago = new PrintagoPanel(m_tabpanel, &printago_url);
+    // Bind(EVT_LOAD_PRINTAGO_URL, [this](wxCommandEvent &evt) {
+    //     wxString url = evt.GetString();
+    //     m_printago->load_url(url);
+    // });
+    // m_tabpanel->AddPage(m_printago, _L("Printago"), std::string("printago_small"), std::string("printago_small"));
 
     if (m_plater) {
         // load initial config

@@ -31,6 +31,7 @@
 #include "BBLTopbar.hpp"
 #include "PrinterWebView.hpp"
 #include "calib_dlg.hpp"
+#include "PrintagoServer.hpp"
 
 #define ENABEL_PRINT_ALL 0
 
@@ -363,6 +364,8 @@ public:
     ProjectPanel*         m_project{ nullptr };
 
     PrintagoPanel*        m_printago{ nullptr };
+    PrintagoServer*       m_printago_server{ nullptr };
+
     CalibrationPanel*     m_calibration{ nullptr };
     WebViewPanel*         m_webview { nullptr };
     PrinterWebView*       m_printer_view{nullptr};
