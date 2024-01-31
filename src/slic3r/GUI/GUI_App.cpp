@@ -6145,6 +6145,11 @@ NotificationManager * GUI_App::notification_manager()
     return nullptr;
 }
 
+PrintagoDirector* GUI_App::printago()
+{
+    return printago_;
+}
+
 // extruders count from selected printer preset
 int GUI_App::extruders_cnt() const
 {

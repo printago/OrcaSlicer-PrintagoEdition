@@ -20,17 +20,21 @@ namespace websocket = beef::websocket;
 namespace net       = boost::asio;
 using tcp           = net::ip::tcp;
 
+namespace Slic3r {
+
 static constexpr short PRINTAGO_PORT = 33647;
 
 void printago_ws_error(beef::error_code ec, char const* what);
 
 //``````````````````````````````````````````````````
-//------------------PrintagoSessions------------------
+//------------------PrintagoSession------------------
 //``````````````````````````````````````````````````
 class PrintagoSession : public std::enable_shared_from_this<PrintagoSession>
 {
+    friend class PrintagoDirector;
+
     websocket::stream<tcp::socket> ws_;
-    beef::flat_buffer             buffer_;
+    beef::flat_buffer              buffer_;
 
 public:
     explicit PrintagoSession(tcp::socket&& socket);
@@ -55,9 +59,15 @@ class PrintagoServer : public std::enable_shared_from_this<PrintagoServer>
     tcp::acceptor    acceptor_;
     std::size_t      reconnection_delay_;
 
+    std::shared_ptr<PrintagoSession> active_session;
+
 public:
     PrintagoServer(net::io_context& ioc, tcp::endpoint endpoint);
     void start();
+
+    void                             set_session(std::shared_ptr<PrintagoSession> session) { active_session = session; }
+    void                             clear_session() { active_session = nullptr; }
+    std::shared_ptr<PrintagoSession> get_session() const { return active_session; }
 
 private:
     void do_accept();
@@ -147,7 +157,7 @@ private:
 class PrintagoGUIJob
 {
 private:
-    static bool SetCanProcessJob(const bool can_process_job);
+    static bool        SetCanProcessJob(const bool can_process_job);
     inline static bool m_can_process_job;
 
 public:
@@ -165,7 +175,7 @@ public:
     }
 
     inline static JobServerState                              serverState = JobServerState::Idle;
-    inline static wxString                                    jobId = "ptgo_default";
+    inline static wxString                                    jobId       = "ptgo_default";
     inline static wxString                                    printerId;
     inline static wxString                                    command;
     inline static wxFileName                                  localFile;
@@ -176,7 +186,6 @@ public:
     static bool CanProcessJob() { return m_can_process_job; }
     static bool BlockJobProcessing() { return SetCanProcessJob(false); }
     static bool UnblockJobProcessing() { return SetCanProcessJob(true); }
-
 };
 
 //``````````````````````````````````````````````````
@@ -200,13 +209,23 @@ private:
 
     static bool ProcessPrintagoCommand(const PrintagoCommand& command);
 
-    void SendStatusMessage   (const wxString printer_id, const json     statusData,   const wxString command = "");
-    void SendResponseMessage (const wxString printer_id, const json     responseData, const wxString command = "");
-    void SendSuccessMessage  (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString localCommandDetail = "");
-    void SendErrorMessage    (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString errorDetail = "");
-    void SendJsonErrorMessage(const wxString printer_id, const wxString localCommand, const wxString command = "", const json     errorDetail = "");
+    void SendStatusMessage(const wxString printer_id, const json statusData, const wxString command = "");
+    void SendResponseMessage(const wxString printer_id, const json responseData, const wxString command = "");
+    void SendSuccessMessage(const wxString printer_id,
+                            const wxString localCommand,
+                            const wxString command            = "",
+                            const wxString localCommandDetail = "");
+    void SendErrorMessage(const wxString printer_id,
+                          const wxString localCommand,
+                          const wxString command     = "",
+                          const wxString errorDetail = "");
+    void SendJsonErrorMessage(const wxString printer_id,
+                              const wxString localCommand,
+                              const wxString command     = "",
+                              const json     errorDetail = "");
 };
 
+} // namespace Slic3r
 
 
 #endif // PRINTAGOSERVER_HPP

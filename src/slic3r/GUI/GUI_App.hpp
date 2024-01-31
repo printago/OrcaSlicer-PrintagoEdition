@@ -57,6 +57,7 @@ class ModelObject;
 class Model;
 class DeviceManager;
 class NetworkAgent;
+class PrintagoDirector;
 
 namespace GUI{
 
@@ -544,6 +545,7 @@ private:
     ParamsDialog*        params_dialog();
     Model&      		 model();
     NotificationManager * notification_manager();
+    PrintagoDirector*      printago();
 
 
     std::string         m_mall_model_download_url;
@@ -570,11 +572,12 @@ private:
     // Parameters extracted from the command line to be passed to GUI after initialization.
     GUI_InitParams* init_params { nullptr };
 
-    AppConfig*      app_config{ nullptr };
-    PresetBundle*   preset_bundle{ nullptr };
-    PresetUpdater*  preset_updater{ nullptr };
-    MainFrame*      mainframe{ nullptr };
-    Plater*         plater_{ nullptr };
+    AppConfig*        app_config{ nullptr };
+    PresetBundle*     preset_bundle{ nullptr };
+    PresetUpdater*    preset_updater{ nullptr };
+    MainFrame*        mainframe{ nullptr };
+    Plater*           plater_{ nullptr };
+    PrintagoDirector* printago_{ nullptr };
 
 	PresetUpdater*  get_preset_updater() { return preset_updater; }
 

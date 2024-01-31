@@ -363,9 +363,6 @@ public:
     //AuxiliaryPanel*       m_auxiliary{ nullptr };
     ProjectPanel*         m_project{ nullptr };
 
-    PrintagoPanel*        m_printago{ nullptr };
-    PrintagoServer*       m_printago_server{ nullptr };
-
     CalibrationPanel*     m_calibration{ nullptr };
     WebViewPanel*         m_webview { nullptr };
     PrinterWebView*       m_printer_view{nullptr};

@@ -6,10 +6,9 @@
 
 namespace beef = boost::beast;
 
-void printago_ws_error(beef::error_code ec, char const* what)
-{
-    BOOST_LOG_TRIVIAL(error) << what << ": " << ec.message();
-}
+namespace Slic3r {
+
+void printago_ws_error(beef::error_code ec, char const* what) { BOOST_LOG_TRIVIAL(error) << what << ": " << ec.message(); }
 
 //``````````````````````````````````````````````````
 //------------------PrintagoSession------------------
@@ -76,7 +75,6 @@ void PrintagoSession::do_write(const std::string& message)
     });
 }
 
-
 //``````````````````````````````````````````````````
 //------------------PrintagoServer------------------
 //``````````````````````````````````````````````````
@@ -100,17 +98,13 @@ PrintagoServer::PrintagoServer(net::io_context& ioc, tcp::endpoint endpoint) : i
         printago_ws_error(ec, "listen");
 }
 
-void PrintagoServer::start()
-{
-    do_accept();
-}
+void PrintagoServer::start() { do_accept(); }
 
 void PrintagoServer::do_accept()
 {
-    acceptor_.async_accept(net::make_strand(ioc_),
-                           [capture0 = shared_from_this()](auto&& PH1, auto&& PH2) {
-                               capture0->on_accept(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
-                           });
+    acceptor_.async_accept(net::make_strand(ioc_), [capture0 = shared_from_this()](auto&& PH1, auto&& PH2) {
+        capture0->on_accept(std::forward<decltype(PH1)>(PH1), std::forward<decltype(PH2)>(PH2));
+    });
 }
 
 void PrintagoServer::on_accept(beef::error_code ec, tcp::socket socket)
@@ -120,19 +114,20 @@ void PrintagoServer::on_accept(beef::error_code ec, tcp::socket socket)
         handle_reconnect();
     } else {
         reconnection_delay_ = 1; // Reset delay on successful connection
-        std::make_shared<PrintagoSession>(std::move(socket))->run();
+        auto session        = std::make_shared<PrintagoSession>(std::move(socket));
+        set_session(session);
+        session->run();
         do_accept(); // Continue to accept new connections
     }
 }
 
-void PrintagoServer::handle_reconnect() {
+void PrintagoServer::handle_reconnect()
+{
     if (reconnection_delay_ < 120) {
         reconnection_delay_ *= 2; // Exponential back-off
     }
     auto timer = std::make_shared<net::steady_timer>(ioc_, std::chrono::seconds(reconnection_delay_));
-    timer->async_wait([capture0 = shared_from_this(), timer](const beef::error_code&) {
-        capture0->do_accept();
-    });
+    timer->async_wait([capture0 = shared_from_this(), timer](const beef::error_code&) { capture0->do_accept(); });
 }
 
 //``````````````````````````````````````````````````
@@ -146,9 +141,9 @@ bool PrintagoGUIJob::SetCanProcessJob(const bool can_process_job)
         localFile.Clear();
         serverState = JobServerState::Idle;
         configFiles.clear();
-        progress          = 0;
-        jobId        = "ptgo_default";
-        
+        progress = 0;
+        jobId    = "ptgo_default";
+
         // wxGetApp().mainframe->m_tabpanel->Enable();
         // wxGetApp().mainframe->m_topbar->Enable();
     } else {
@@ -194,19 +189,17 @@ PrintagoDirector::~PrintagoDirector()
 
 void PrintagoDirector::SendMessage(const std::string& message)
 {
-    server->SendMessage(message);
+    auto session = server->get_session();
+    if (session) {
+        session->async_send(message);
+    }
 }
 
-bool PrintagoDirector::PrintagoDirector::ParseCommand(const std::string& command)
-{
-    
-    return true;
-}
+bool PrintagoDirector::PrintagoDirector::ParseCommand(const std::string& command) { return true; }
 
 bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& command)
 {
-    
+    return true;
 }
 
-
-
+} // namespace Slic3r
