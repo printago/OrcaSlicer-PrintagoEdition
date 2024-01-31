@@ -137,6 +137,7 @@ private:
     void SendJsonErrorMessage(const wxString printer_id, const wxString localCommand, const wxString command = "", const json     errorDetail = "");
 
     // wraps SendErrorMessage and SetCanProcessJob(true)
+    //TODO : why not always unblock in the normal Error message...
     void SendErrorAndUnblock(const wxString printer_id, const wxString localCommand, const wxString command, const wxString errorDetail);
 
     wxStringToStringHashMap      ParseQueryString(const wxString &queryString);

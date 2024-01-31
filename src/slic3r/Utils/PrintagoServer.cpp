@@ -1,10 +1,19 @@
 #include "PrintagoServer.hpp"
 #include <boost/asio/steady_timer.hpp>
+
 #include <chrono>
+// #include "slic3r/GUI/SelectMachine.hpp"
 
-void fail(beast::error_code ec, char const* what) { std::cerr << what << ": " << ec.message() << "\n"; }
+namespace beef = boost::beast;
 
-// PrintagoSession Implementation
+void printago_ws_error(beef::error_code ec, char const* what)
+{
+    BOOST_LOG_TRIVIAL(error) << what << ": " << ec.message();
+}
+
+//``````````````````````````````````````````````````
+//------------------PrintagoSession------------------
+//``````````````````````````````````````````````````
 PrintagoSession::PrintagoSession(tcp::socket&& socket) : ws_(std::move(socket)) {}
 
 void PrintagoSession::run() { on_run(); }
@@ -16,10 +25,10 @@ void PrintagoSession::on_run()
     ws_.async_accept([capture0 = shared_from_this()](auto&& PH1) { capture0->on_accept(std::forward<decltype(PH1)>(PH1)); });
 }
 
-void PrintagoSession::on_accept(beast::error_code ec)
+void PrintagoSession::on_accept(beef::error_code ec)
 {
     if (ec)
-        return fail(ec, "accept");
+        return printago_ws_error(ec, "accept");
 
     do_read();
 }
@@ -31,54 +40,70 @@ void PrintagoSession::do_read()
     });
 }
 
-void PrintagoSession::on_read(beast::error_code ec, std::size_t bytes_transferred)
+void PrintagoSession::on_read(beef::error_code ec, std::size_t bytes_transferred)
 {
-    if (ec)
-        return fail(ec, "read");
-
-    // Process the received message (contained in buffer_)
-    // For example, echo the message back
-    // buffer_.data() contains the received data
-
-    // Send response back to the client
-    ws_.async_write(buffer_.data(), [self = shared_from_this()](beast::error_code ec, std::size_t length) {
-        if (ec)
-            return fail(ec, "write");
-        self->do_read(); // Continue to read next messages
-    });
+    if (ec) {
+        printago_ws_error(ec, "read");
+    } else {
+        ws_.text(ws_.got_text());
+        const auto msg = beef::buffers_to_string(buffer_.data());
+        PrintagoDirector::ParseCommand(msg);
+        buffer_.consume(buffer_.size());
+        do_read();
+    }
 }
 
-void PrintagoSession::on_write(beast::error_code ec, std::size_t bytes_transferred)
+void PrintagoSession::on_write(beef::error_code ec, std::size_t bytes_transferred)
 {
     if (ec)
-        return fail(ec, "write");
+        return printago_ws_error(ec, "write");
 
     buffer_.consume(buffer_.size());
     do_read();
 }
 
-// PrintagoServer Implementation
+void PrintagoSession::async_send(const std::string& message)
+{
+    net::post(ws_.get_executor(), [self = shared_from_this(), message]() { self->do_write(message); });
+}
+
+void PrintagoSession::do_write(const std::string& message)
+{
+    ws_.async_write(net::buffer(message), [self = shared_from_this()](beef::error_code ec, std::size_t length) {
+        if (ec) {
+            printago_ws_error(ec, "write");
+        }
+    });
+}
+
+
+//``````````````````````````````````````````````````
+//------------------PrintagoServer------------------
+//``````````````````````````````````````````````````
 PrintagoServer::PrintagoServer(net::io_context& ioc, tcp::endpoint endpoint) : ioc_(ioc), acceptor_(ioc), reconnection_delay_(1)
 {
-    beast::error_code ec;
+    beef::error_code ec;
     acceptor_.open(endpoint.protocol(), ec);
     if (ec)
-        fail(ec, "open");
+        printago_ws_error(ec, "open");
 
     acceptor_.set_option(net::socket_base::reuse_address(true), ec);
     if (ec)
-        fail(ec, "set_option");
+        printago_ws_error(ec, "set_option");
 
     acceptor_.bind(endpoint, ec);
     if (ec)
-        fail(ec, "bind");
+        printago_ws_error(ec, "bind");
 
     acceptor_.listen(net::socket_base::max_listen_connections, ec);
     if (ec)
-        fail(ec, "listen");
+        printago_ws_error(ec, "listen");
 }
 
-void PrintagoServer::start() { do_accept(); }
+void PrintagoServer::start()
+{
+    do_accept();
+}
 
 void PrintagoServer::do_accept()
 {
@@ -88,10 +113,10 @@ void PrintagoServer::do_accept()
                            });
 }
 
-void PrintagoServer::on_accept(beast::error_code ec, tcp::socket socket)
+void PrintagoServer::on_accept(beef::error_code ec, tcp::socket socket)
 {
     if (ec) {
-        fail(ec, "accept");
+        printago_ws_error(ec, "accept");
         handle_reconnect();
     } else {
         reconnection_delay_ = 1; // Reset delay on successful connection
@@ -105,8 +130,83 @@ void PrintagoServer::handle_reconnect() {
         reconnection_delay_ *= 2; // Exponential back-off
     }
     auto timer = std::make_shared<net::steady_timer>(ioc_, std::chrono::seconds(reconnection_delay_));
-    timer->async_wait([capture0 = shared_from_this(), timer](const beast::error_code&) {
+    timer->async_wait([capture0 = shared_from_this(), timer](const beef::error_code&) {
         capture0->do_accept();
     });
 }
+
+//``````````````````````````````````````````````````
+//------------------PrintagoGUIJob------------------
+//``````````````````````````````````````````````````
+bool PrintagoGUIJob::SetCanProcessJob(const bool can_process_job)
+{
+    if (can_process_job) {
+        printerId.Clear();
+        command.Clear();
+        localFile.Clear();
+        serverState = JobServerState::Idle;
+        configFiles.clear();
+        progress          = 0;
+        jobId        = "ptgo_default";
+        
+        // wxGetApp().mainframe->m_tabpanel->Enable();
+        // wxGetApp().mainframe->m_topbar->Enable();
+    } else {
+        // wxGetApp().mainframe->m_tabpanel->Disable();
+        // wxGetApp().mainframe->m_topbar->Disable();
+    }
+    m_can_process_job = can_process_job;
+    return can_process_job;
+}
+
+//``````````````````````````````````````````````````
+//------------------PrintagoDirector------------------
+//``````````````````````````````````````````````````
+PrintagoDirector::PrintagoDirector()
+{
+    // Initialize and start the server
+    _io_context   = std::make_shared<net::io_context>();
+    auto endpoint = tcp::endpoint(net::ip::make_address("0.0.0.0"), PRINTAGO_PORT);
+    server        = std::make_shared<PrintagoServer>(*_io_context, endpoint);
+    server->start();
+
+    // Start the server on a separate thread
+    server_thread = std::thread([this] { _io_context->run(); });
+    server_thread.detach(); // Detach the thread
+
+    // Initialize other members as needed
+    m_select_machine_dlg = new Slic3r::GUI::SelectMachineDialog(/* constructor arguments if any */);
+}
+
+PrintagoDirector::~PrintagoDirector()
+{
+    // Ensure proper cleanup
+    if (_io_context) {
+        _io_context->stop();
+    }
+    if (server_thread.joinable()) {
+        server_thread.join();
+    }
+
+    // Clean up other resources
+    delete m_select_machine_dlg;
+}
+
+void PrintagoDirector::SendMessage(const std::string& message)
+{
+    server->SendMessage(message);
+}
+
+bool PrintagoDirector::PrintagoDirector::ParseCommand(const std::string& command)
+{
+    
+    return true;
+}
+
+bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& command)
+{
+    
+}
+
+
 

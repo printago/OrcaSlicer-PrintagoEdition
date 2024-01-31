@@ -609,20 +609,16 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
         evt.Skip();
     });
 
-    // TODO: move this to somewhere else if we don't need to init in the UI.
-    try {
-        boost::asio::io_context _io_context;
-
-        // Create endpoint for localhost on port 33647
-        auto endpoint = boost::asio::ip::tcp::endpoint(boost::asio::ip::make_address("127.0.0.1"), 33647);
-
-        PrintagoServer server(_io_context, endpoint);
-        _io_context.run();
-        server.start();
+    CallAfter([=] {
+        auto _io_context = std::make_shared<net::io_context>();
+        auto endpoint    = tcp::endpoint(net::ip::make_address("0.0.0.0"), PRINTAGO_PORT);
+        auto server      = std::make_shared<PrintagoServer>(*_io_context, endpoint);
+        server->start();
         
-    } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << '\n';
-    }
+        std::thread server_thread([_io_context] { _io_context->run(); });
+        server_thread.detach(); // Detach the thread to allow it to run independently
+    });
+
 
 #ifdef _MSW_DARK_MODE
     wxGetApp().UpdateDarkUIWin(this);
