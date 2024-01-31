@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "nlohmann/json.hpp"
+#include "slic3r/GUI/PrintagoPanel.hpp"
 
 #include "slic3r/GUI/SelectMachine.hpp"
 
@@ -81,6 +82,8 @@ private:
 class PrintagoCommand
 {
 public:
+    PrintagoCommand() = default;
+
     PrintagoCommand(const wxString&         command_type,
                     const wxString&         action,
                     wxStringToStringHashMap parameters,
@@ -115,24 +118,22 @@ private:
 };
 
 //``````````````````````````````````````````````````
-//------------------PrintagoMessage-----------------
+//------------------PrintagoResponse----------------
 //``````````````````````````````````````````````````
-class PrintagoMessageEvent : public wxEvent
+class PrintagoResponse 
 {
 public:
-    PrintagoMessageEvent(wxEventType eventType = wxEVT_NULL) : wxEvent(0, eventType) {}
+    PrintagoResponse() {}
 
-    PrintagoMessageEvent(const PrintagoMessageEvent& event)
+    PrintagoResponse(const PrintagoResponse& response)
     {
-        this->m_message_type = event.m_message_type;
-        this->m_printer_id   = event.m_printer_id;
-        this->m_command      = event.m_command;
-        this->m_data         = event.m_data;
+        this->m_message_type = response.m_message_type;
+        this->m_printer_id   = response.m_printer_id;
+        this->m_command      = response.m_command;
+        this->m_data         = response.m_data;
     }
 
-    virtual ~PrintagoMessageEvent() {}
-
-    wxEvent* Clone() const override { return new PrintagoMessageEvent(*this); }
+    virtual ~PrintagoResponse() {}
 
     void SetMessageType(const wxString& message) { this->m_message_type = message; }
     void SetPrinterId(const wxString& printer_id) { this->m_printer_id = printer_id; }
@@ -152,9 +153,9 @@ private:
 };
 
 //``````````````````````````````````````````````````
-//------------------PrintagoGUIJob------------------
+//------------------PBJob (Printago Blocking Job)---
 //``````````````````````````````````````````````````
-class PrintagoGUIJob
+class PBJob
 {
 private:
     static bool        SetCanProcessJob(const bool can_process_job);
@@ -197,35 +198,29 @@ public:
     PrintagoDirector();
     ~PrintagoDirector();
 
-    void        SendMessage(const std::string& message);
     static bool ParseCommand(const std::string& command);
 
 private:
-    std::shared_ptr<net::io_context> _io_context;
-    std::shared_ptr<PrintagoServer>  server;
-    std::thread                      server_thread;
+    static std::shared_ptr<net::io_context> _io_context;
+    static std::shared_ptr<PrintagoServer>  server;
+    static std::thread                      server_thread;
 
     Slic3r::GUI::SelectMachineDialog* m_select_machine_dlg = nullptr;
 
     static bool ProcessPrintagoCommand(const PrintagoCommand& command);
 
-    void SendStatusMessage(const wxString printer_id, const json statusData, const wxString command = "");
-    void SendResponseMessage(const wxString printer_id, const json responseData, const wxString command = "");
-    void SendSuccessMessage(const wxString printer_id,
-                            const wxString localCommand,
-                            const wxString command            = "",
-                            const wxString localCommandDetail = "");
-    void SendErrorMessage(const wxString printer_id,
-                          const wxString localCommand,
-                          const wxString command     = "",
-                          const wxString errorDetail = "");
-    void SendJsonErrorMessage(const wxString printer_id,
-                              const wxString localCommand,
-                              const wxString command     = "",
-                              const json     errorDetail = "");
+    void SendStatusMessage   (const wxString printer_id, const json statusData,       const wxString command = "");
+    void SendResponseMessage (const wxString printer_id, const json responseData,     const wxString command = "");
+    void SendSuccessMessage  (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString localCommandDetail = "");
+    static void PostErrorMessage    (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString errorDetail = "");
+
+    static void _PostResponse(const PrintagoResponse response);
+
+    static wxStringToStringHashMap _ParseQueryString(const wxString& queryString);
+
+    static bool ValidatePrintagoCommand(const PrintagoCommand& cmd);
 };
 
 } // namespace Slic3r
-
 
 #endif // PRINTAGOSERVER_HPP

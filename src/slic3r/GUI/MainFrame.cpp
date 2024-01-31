@@ -609,17 +609,6 @@ DPIFrame(NULL, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, BORDERLESS_FRAME_
         evt.Skip();
     });
 
-    CallAfter([=] {
-        auto _io_context = std::make_shared<net::io_context>();
-        auto endpoint    = tcp::endpoint(net::ip::make_address("0.0.0.0"), PRINTAGO_PORT);
-        auto server      = std::make_shared<PrintagoServer>(*_io_context, endpoint);
-        server->start();
-        
-        std::thread server_thread([_io_context] { _io_context->run(); });
-        server_thread.detach(); // Detach the thread to allow it to run independently
-    });
-
-
 #ifdef _MSW_DARK_MODE
     wxGetApp().UpdateDarkUIWin(this);
 #endif // _MSW_DARK_MODE
