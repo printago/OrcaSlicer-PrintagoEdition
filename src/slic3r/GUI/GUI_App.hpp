@@ -545,7 +545,7 @@ private:
     ParamsDialog*        params_dialog();
     Model&      		 model();
     NotificationManager * notification_manager();
-    PrintagoDirector*      printago();
+    PrintagoDirector*    printago_director();
 
 
     std::string         m_mall_model_download_url;
@@ -577,7 +577,7 @@ private:
     PresetUpdater*    preset_updater{ nullptr };
     MainFrame*        mainframe{ nullptr };
     Plater*           plater_{ nullptr };
-    PrintagoDirector* printago_{ nullptr };
+    PrintagoDirector* printago_director_{ nullptr };
 
 	PresetUpdater*  get_preset_updater() { return preset_updater; }
 

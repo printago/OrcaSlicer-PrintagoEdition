@@ -1080,13 +1080,16 @@ void MainFrame::init_tabpanel() {
     m_calibration->SetBackgroundColour(*wxWHITE);
     m_tabpanel->AddPage(m_calibration, _L("Calibration"), std::string("tab_monitor_active"), std::string("tab_monitor_active"), false);
 
-    // wxString printago_url = "http://localhost:3000/testInterface.html";//"https://d1rqir9uohfia0.cloudfront.net/bambu";//
+    // wxString printago_url = "http://localhost:3000/testInterface.html";
     // m_printago = new PrintagoPanel(m_tabpanel, &printago_url);
     // Bind(EVT_LOAD_PRINTAGO_URL, [this](wxCommandEvent &evt) {
     //     wxString url = evt.GetString();
     //     m_printago->load_url(url);
     // });
     // m_tabpanel->AddPage(m_printago, _L("Printago"), std::string("printago_small"), std::string("printago_small"));
+    
+
+    // CallAfter([=] { PrintagoDirector::Instance()->init(); });
 
     if (m_plater) {
         // load initial config

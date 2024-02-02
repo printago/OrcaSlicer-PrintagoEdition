@@ -198,27 +198,56 @@ public:
     PrintagoDirector();
     ~PrintagoDirector();
 
-    static bool ParseCommand(const std::string& command);
+    bool ParseCommand(const std::string& command);
+
+    PrintagoDirector(const PrintagoDirector&)            = delete;
+    PrintagoDirector& operator=(const PrintagoDirector&) = delete;
 
 private:
-    static std::shared_ptr<net::io_context> _io_context;
-    static std::shared_ptr<PrintagoServer>  server;
-    static std::thread                      server_thread;
+    std::shared_ptr<net::io_context> _io_context;
+    std::shared_ptr<PrintagoServer>  server;
+    std::thread                      server_thread;
 
     Slic3r::GUI::SelectMachineDialog* m_select_machine_dlg = nullptr;
 
-    static bool ProcessPrintagoCommand(const PrintagoCommand& command);
+    void PostStatusMessage   (const wxString printer_id, const json statusData,       const wxString command = "");
+    void PostResponseMessage (const wxString printer_id, const json responseData,     const wxString command = "");
+    void PostSuccessMessage  (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString localCommandDetail = "");
+    void PostErrorMessage    (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString errorDetail = "");
 
-    void SendStatusMessage   (const wxString printer_id, const json statusData,       const wxString command = "");
-    void SendResponseMessage (const wxString printer_id, const json responseData,     const wxString command = "");
-    void SendSuccessMessage  (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString localCommandDetail = "");
-    static void PostErrorMessage    (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString errorDetail = "");
+    void _PostResponse(const PrintagoResponse response);
 
-    static void _PostResponse(const PrintagoResponse response);
+    wxStringToStringHashMap _ParseQueryString(const wxString& queryString);
 
-    static wxStringToStringHashMap _ParseQueryString(const wxString& queryString);
+    bool ValidatePrintagoCommand(const PrintagoCommand& cmd);
+    bool ProcessPrintagoCommand(const PrintagoCommand& command);
+    std::map<wxString, wxString> ExtractPrefixedParams(const wxStringToStringHashMap& params, const wxString& prefix);
 
-    static bool ValidatePrintagoCommand(const PrintagoCommand& cmd);
+    json        GetAllStatus();
+    void        AddCurrentProcessJsonTo(json& statusObject);
+    json        GetMachineStatus(const wxString& printerId);
+    json        GetMachineStatus(MachineObject* machine);
+    json        MachineObjectToJson(MachineObject* machine);
+    json        ConfigToJson(const DynamicPrintConfig &config, const std::string &name, const std::string &from, const std::string &version, const std::string is_custom = "");
+
+    json GetCompatOtherConfigsNames(Preset::Type preset_type, const Preset &printerPreset);
+    json GetCompatFilamentConfigNames(const Preset &printerPreset) { return GetCompatOtherConfigsNames(Preset::TYPE_FILAMENT, printerPreset); }
+    json GetCompatPrintConfigNames(const Preset &printerPreset)    { return GetCompatOtherConfigsNames(Preset::TYPE_PRINT   , printerPreset); }
+
+    bool IsConfigCompatWithPrinter(const PresetWithVendorProfile &preset, const Preset &printerPreset);
+    bool IsConfigCompatWithParent(const PresetWithVendorProfile &preset, const PresetWithVendorProfile &active_printer);
+
+    std::string GetConfigNameFromJsonFile(const wxString& FilePath);
+    json        GetConfigByName(wxString configType, wxString configName);
+    json        GetCompatPrinterConfigNames(std::string printer_type);
+    void        ImportPrintagoConfigs();
+    void        SetPrintagoConfigs();
+    
+
+    bool SwitchSelectedPrinter(const wxString& printerId);
+
+    bool SavePrintagoFile(const wxString url, wxFileName& localPath);
+    bool DownloadFileFromURL(const wxString url, const wxFileName& localPath);
 };
 
 } // namespace Slic3r

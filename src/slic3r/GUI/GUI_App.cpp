@@ -2774,8 +2774,9 @@ bool GUI_App::on_init_inner()
 
     });
 
-    m_initialized = true;
+    printago_director_ = new PrintagoDirector();
 
+    m_initialized = true;
     flush_logs();
 
     BOOST_LOG_TRIVIAL(info) << "finished the gui app init";
@@ -6009,6 +6010,11 @@ const Plater* GUI_App::plater() const
     return plater_;
 }
 
+PrintagoDirector* GUI_App::printago_director()
+{
+    return printago_director_;
+}
+
 ParamsPanel* GUI_App::params_panel()
 {
     if (mainframe)
@@ -6143,11 +6149,6 @@ NotificationManager * GUI_App::notification_manager()
     if (plater_)
         return plater_->get_notification_manager();
     return nullptr;
-}
-
-PrintagoDirector* GUI_App::printago()
-{
-    return printago_;
 }
 
 // extruders count from selected printer preset

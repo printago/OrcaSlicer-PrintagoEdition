@@ -3,6 +3,14 @@
 
 #include <chrono>
 #include <wx/tokenzr.h>
+#include <wx/event.h>
+#include <wx/url.h>
+
+#include "slic3r/GUI/MainFrame.hpp"
+#include "slic3r/GUI/GUI_App.hpp"
+#include "slic3r/GUI/Tab.hpp"
+
+
 // #include "slic3r/GUI/SelectMachine.hpp"
 
 namespace beef = boost::beast;
@@ -50,7 +58,7 @@ void PrintagoSession::on_read(beef::error_code ec, std::size_t bytes_transferred
     } else {
         ws_.text(ws_.got_text());
         const auto msg = beef::buffers_to_string(buffer_.data());
-        PrintagoDirector::ParseCommand(msg);
+        wxGetApp().printago_director()->ParseCommand(msg);
         buffer_.consume(buffer_.size());
         do_read();
     }
@@ -118,10 +126,10 @@ void PrintagoServer::on_accept(beef::error_code ec, tcp::socket socket)
         handle_reconnect();
     } else {
         reconnection_delay_ = 1; // Reset delay on successful connection
-        auto session        = std::make_shared<PrintagoSession>(std::move(socket));
+        auto session = std::make_shared<PrintagoSession>(std::move(socket));
         set_session(session);
         session->run();
-        do_accept(); // Continue to accept new connections
+        do_accept(); 
     }
 }
 
@@ -168,11 +176,11 @@ PrintagoDirector::PrintagoDirector()
     auto endpoint = tcp::endpoint(net::ip::make_address("0.0.0.0"), PRINTAGO_PORT);
     server        = std::make_shared<PrintagoServer>(*_io_context, endpoint);
     server->start();
-
+    
     // Start the server on a separate thread
     server_thread = std::thread([this] { _io_context->run(); });
     server_thread.detach(); // Detach the thread
-
+    
     // Initialize other members as needed
     m_select_machine_dlg = new Slic3r::GUI::SelectMachineDialog(/* constructor arguments if any */);
 }
@@ -191,10 +199,7 @@ PrintagoDirector::~PrintagoDirector()
     delete m_select_machine_dlg;
 }
 
-void PrintagoDirector::PostErrorMessage(const wxString printer_id,
-                                        const wxString localCommand,
-                                        const wxString command,
-                                        const wxString errorDetail)
+void PrintagoDirector::PostErrorMessage(const wxString printer_id, const wxString localCommand, const wxString command, const wxString errorDetail)
 {
     if (PBJob::CanProcessJob()) {
         PBJob::UnblockJobProcessing();
@@ -215,6 +220,52 @@ void PrintagoDirector::PostErrorMessage(const wxString printer_id,
 
     _PostResponse(*resp);
     
+}
+
+void PrintagoDirector::PostResponseMessage(const wxString printer_id, const json responseData, const wxString command)
+{
+    auto* resp = new PrintagoResponse();
+    resp->SetMessageType("status");
+    resp->SetPrinterId(printer_id);
+    const wxURL url(command);
+    resp->SetCommand(url.GetPath().ToStdString());
+    resp->SetData(responseData);
+
+    _PostResponse(*resp);
+}
+
+void PrintagoDirector::PostSuccessMessage(const wxString printer_id,
+                                          const wxString localCommand,
+                                          const wxString command,
+                                          const wxString localCommandDetail)
+{
+    json responseData;
+    responseData["local_command"]        = localCommand.ToStdString();
+    responseData["local_command_detail"] = localCommandDetail.ToStdString();
+    responseData["success"]              = true;
+
+    auto* resp = new PrintagoResponse();
+    resp->SetMessageType("success");
+    resp->SetPrinterId(printer_id);
+    const wxURL url(command);
+    wxString    path = url.GetPath();
+    resp->SetCommand((!path.empty() && path[0] == '/') ? path.Remove(0, 1).ToStdString() : path.ToStdString());
+    resp->SetData(responseData);
+
+    _PostResponse(*resp);
+}
+
+void PrintagoDirector::PostStatusMessage(const wxString printer_id, const json statusData, const wxString command)
+{
+    auto* resp = new PrintagoResponse(); // PrintagoMessageEvent(PRINTAGO_SEND_WEBVIEW_MESSAGE_EVENT);
+    resp->SetMessageType("status");
+    resp->SetPrinterId(printer_id);
+    const wxURL url(command);
+    wxString path = url.GetPath();
+    resp->SetCommand((!path.empty() && path[0] == '/') ? path.Remove(0, 1).ToStdString() : path.ToStdString());
+    resp->SetData(statusData);
+
+    _PostResponse(*resp);
 }
 
 void PrintagoDirector::_PostResponse(const PrintagoResponse response)
@@ -252,7 +303,7 @@ bool PrintagoDirector::ParseCommand(const std::string& command)
     wxString      commandType, action;
 
     if (pathComponents.GetCount() != 3) {
-        PostErrorMessage("", "", "", "invalid printago command");
+        wxGetApp().printago_director()->PostErrorMessage("", "", "", "invalid printago command");
         return false;
     }
 
@@ -272,8 +323,7 @@ bool PrintagoDirector::ParseCommand(const std::string& command)
         PostErrorMessage("", "", command_str, "invalid printago command");
         return false;
     } else {
-        ProcessPrintagoCommand(printagoCommand);
-        // CallAfter([=]() { HandlePrintagoCommand(printagoCommand); });
+        wxGetApp().CallAfter([=]() { ProcessPrintagoCommand(printagoCommand); });
     }
 
     return true;
@@ -321,6 +371,111 @@ bool PrintagoDirector::ValidatePrintagoCommand(const PrintagoCommand& cmd)
     return false;
 }
 
+json PrintagoDirector::GetAllStatus()
+{
+    json statusObject = json::object();
+    json machineList  = json::array();
+
+    if (!wxGetApp().getDeviceManager())
+        return json::object();
+
+    AddCurrentProcessJsonTo(statusObject);
+
+    const std::map<std::string, MachineObject*> machineMap = wxGetApp().getDeviceManager()->get_my_machine_list();
+
+    for (auto& pair : machineMap) {
+        machineList.push_back(MachineObjectToJson(pair.second));
+    }
+    statusObject["machines"] = machineList;
+    return statusObject;
+}
+
+json PrintagoDirector::GetCompatOtherConfigsNames(Preset::Type preset_type, const Preset &printerPreset)
+{
+    PresetCollection *collection = nullptr;
+    std::string       configType;
+
+    if (preset_type == Preset::TYPE_FILAMENT) {
+        collection = &wxGetApp().preset_bundle->filaments;
+        configType = "filament";
+    } else if (preset_type == Preset::TYPE_PRINT) {
+        collection = &wxGetApp().preset_bundle->prints;
+        configType = "print";
+    } else {
+        json noresult;
+        return noresult;
+    }
+
+    json result;
+    // Iterate through each preset
+    for (Preset preset : collection->get_presets()) {
+        if (!preset.is_visible)
+            continue; // Skip hidden presets
+
+        // Variable to hold the source of the preset
+        wxString source = "";
+
+        // Determine the source of the preset
+        if (preset.is_system) {
+            source = "system";
+        } else if (preset.is_project_embedded) {
+            source = "project";
+        } else if (preset.is_user()) {
+            source = "user";
+        } else {
+            continue; // Skip this preset
+        }
+
+        auto presetWithVendor = collection->get_preset_with_vendor_profile(preset);
+        if (IsConfigCompatWithPrinter(presetWithVendor, printerPreset)) {
+            result[configType][source.ToStdString()].push_back(preset.name);
+        }
+    }
+
+    return result;
+}
+
+bool PrintagoDirector::IsConfigCompatWithPrinter(const PresetWithVendorProfile &preset, const Preset &printerPreset)
+{
+    auto active_printer = wxGetApp().preset_bundle->printers.get_preset_with_vendor_profile(printerPreset);
+
+    DynamicPrintConfig extra_config;
+    extra_config.set_key_value("printer_preset", new ConfigOptionString(printerPreset.name));
+    const ConfigOption *opt = printerPreset.config.option("nozzle_diameter");
+    if (opt)
+        extra_config.set_key_value("num_extruders", new ConfigOptionInt((int) static_cast<const ConfigOptionFloats *>(opt)->values.size()));
+
+    if (preset.vendor != nullptr && preset.vendor != active_printer.vendor)
+		// The current profile has a vendor assigned and it is different from the active print's vendor.
+		return false;
+    auto &condition               = preset.preset.compatible_printers_condition();
+    auto *compatible_printers     = dynamic_cast<const ConfigOptionStrings*>(preset.preset.config.option("compatible_printers"));
+    bool  has_compatible_printers = compatible_printers != nullptr && ! compatible_printers->values.empty();
+    if (! has_compatible_printers && ! condition.empty()) {
+        try {
+            return PlaceholderParser::evaluate_boolean_expression(condition, active_printer.preset.config, &extra_config);
+        } catch (const std::runtime_error &err) {
+            //FIXME in case of an error, return "compatible with everything".
+            printf("Preset::is_compatible_with_printer - parsing error of compatible_printers_condition %s:\n%s\n",
+            active_printer.preset.name.c_str(), err.what()); return true;
+        }
+    }
+    return preset.preset.is_default || active_printer.preset.name.empty() || !has_compatible_printers ||
+        std::find(compatible_printers->values.begin(), compatible_printers->values.end(), active_printer.preset.name) !=
+        compatible_printers->values.end()
+        //BBS
+           || (!active_printer.preset.is_system && IsConfigCompatWithParent(preset, active_printer));
+}
+
+bool PrintagoDirector::IsConfigCompatWithParent(const PresetWithVendorProfile &preset, const PresetWithVendorProfile &active_printer)
+{
+    auto *compatible_printers     = dynamic_cast<const ConfigOptionStrings *>(preset.preset.config.option("compatible_printers"));
+    bool  has_compatible_printers = compatible_printers != nullptr && !compatible_printers->values.empty();
+    // BBS: FIXME only check the parent now, but should check grand-parent as well.
+    return has_compatible_printers && std::find(compatible_printers->values.begin(), compatible_printers->values.end(),
+                                                active_printer.preset.inherits()) != compatible_printers->values.end();
+}
+
 bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
 {
     wxString                commandType        = cmd.GetCommandType();
@@ -337,13 +492,13 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
     if (!commandType.compare("status")) {
         std::string username = wxGetApp().getAgent()->is_user_login() ? wxGetApp().getAgent()->get_user_name() : "nouser@bab";
         if (!action.compare("get_machine_list")) {
-            SendResponseMessage(username, GetAllStatus(), originalCommandStr);
+            PostResponseMessage(username, GetAllStatus(), originalCommandStr);
         } else if (!action.compare("get_config")) {
             wxString config_type = parameters["config_type"];                                 // printer, filament, print
             wxString config_name = Http::url_decode(parameters["config_name"].ToStdString()); // name of the config
             json     configJson  = GetConfigByName(config_type, config_name);
             if (!configJson.empty()) {
-                SendResponseMessage(username, configJson, originalCommandStr);
+                PostResponseMessage(username, configJson, originalCommandStr);
             } else {
                 PostErrorMessage(username, action, originalCommandStr, "config not found; valid types are: print, printer, or filament");
                 return false;
@@ -357,7 +512,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                     PostErrorMessage("", action, originalCommandStr, "unable, unknown");
                 } else {
                     actionDetail = wxString::Format("connecting to %s", printerId);
-                    SendSuccessMessage(printerId, action, originalCommandStr, actionDetail);
+                    PostSuccessMessage(printerId, action, originalCommandStr, actionDetail);
                 }
             } else {
                 PostErrorMessage("", action, originalCommandStr, "no printer_id specified");
@@ -420,7 +575,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 return false;
             }
         } else if (!action.compare("get_status")) {
-            SendStatusMessage(printerId, GetMachineStatus(printer), originalCommandStr);
+            PostStatusMessage(printerId, GetMachineStatus(printer), originalCommandStr);
             return true;
         } else if (!action.compare("start_print_bbl")) {
             if (!printer->can_print() && PBJob::printerId.compare(printerId)) { // printer can print, and we're not already prepping for it.
@@ -643,9 +798,430 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
 
     // only send this response if it's *not* a start_print_bbl command.
     if (action.compare("start_print_bbl")) {
-        SendSuccessMessage(printerId, action, originalCommandStr, actionDetail);
+        PostSuccessMessage(printerId, action, originalCommandStr, actionDetail);
     }
     return true;
+}
+
+void PrintagoDirector::ImportPrintagoConfigs()
+{
+    std::vector<std::string> cfiles;
+    cfiles.push_back(into_u8(PBJob::configFiles["printer"].GetFullPath()));
+    cfiles.push_back(into_u8(PBJob::configFiles["filament"].GetFullPath()));
+    cfiles.push_back(into_u8(PBJob::configFiles["print"].GetFullPath()));
+
+    wxGetApp().preset_bundle->import_presets(
+        cfiles, [this](std::string const& name) { return wxID_YESTOALL; }, ForwardCompatibilitySubstitutionRule::Enable);
+    if (!cfiles.empty()) {
+        // reloads the UI presets in the dropdowns.
+        wxGetApp().load_current_presets(true);
+    }
+}
+
+void PrintagoDirector::SetPrintagoConfigs()
+{
+    std::string printerProfileName  = GetConfigNameFromJsonFile(PBJob::configFiles["printer"].GetFullPath());
+    std::string filamentProfileName = GetConfigNameFromJsonFile(PBJob::configFiles["filament"].GetFullPath());
+    std::string printProfileName    = GetConfigNameFromJsonFile(PBJob::configFiles["print"].GetFullPath());
+    
+    wxGetApp().get_tab(Preset::TYPE_PRINTER)->select_preset(printerProfileName);
+    wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(printProfileName);
+
+    int numFilaments = wxGetApp().filaments_cnt();
+    for (int i = 0; i < numFilaments; ++i) {
+        wxGetApp().preset_bundle->set_filament_preset(i, filamentProfileName);
+        wxGetApp().plater()->sidebar().combos_filament()[i]->update();
+    }
+}
+
+std::map<wxString, wxString> PrintagoDirector::ExtractPrefixedParams(const wxStringToStringHashMap& params, const wxString& prefix)
+{
+    std::map<wxString, wxString> extractedParams;
+    for (const auto& kv : params) {
+        if (kv.first.StartsWith(prefix + ".")) {
+            wxString parmName         = kv.first.Mid(prefix.length() + 1); // +1 for the dot
+            extractedParams[parmName] = kv.second;
+        }
+    }
+    return extractedParams;
+}
+
+std::string PrintagoDirector::GetConfigNameFromJsonFile(const wxString& FilePath)
+{
+    std::ifstream file(FilePath.ToStdString());
+    if (!file.is_open()) {
+        return "";
+    }
+    json j;
+    file >> j;
+    file.close();
+    return j.at("name").get<std::string>();
+}
+
+void PrintagoDirector::AddCurrentProcessJsonTo(json& statusObject)
+{
+    statusObject["process"]["can_process_job"] = PBJob::CanProcessJob();
+    statusObject["process"]["job_id"]         = PBJob::jobId.ToStdString();
+    statusObject["process"]["job_state"]      = PBJob::serverState;
+    statusObject["process"]["job_machine"]    = PBJob::printerId.ToStdString();
+    statusObject["process"]["job_local_file"] = PBJob::localFile.GetFullPath().ToStdString();
+    statusObject["process"]["job_progress"]   = PBJob::progress;
+
+    statusObject["software"]["is_dark_mode"] = wxGetApp().dark_mode();
+}
+
+json PrintagoDirector::GetMachineStatus(MachineObject* machine)
+{
+    json statusObject = json::object();
+    json machineList  = json::array();
+
+    if (!machine)
+        return json::object();
+
+    AddCurrentProcessJsonTo(statusObject);
+
+    machineList.push_back(MachineObjectToJson(machine));
+    statusObject["machines"] = machineList;
+    return statusObject;
+}
+
+json PrintagoDirector::GetMachineStatus(const wxString& printerId)
+{
+    if (!wxGetApp().getDeviceManager())
+        return json::object();
+    return GetMachineStatus(wxGetApp().getDeviceManager()->get_my_machine(printerId.ToStdString()));
+}
+
+json PrintagoDirector::MachineObjectToJson(MachineObject* machine)
+{
+    json j;
+    if (machine) {
+        j["hardware"]["dev_model"]        = machine->printer_type;
+        j["hardware"]["dev_display_name"] = machine->get_printer_type_display_str().ToStdString();
+        j["hardware"]["dev_name"]         = machine->dev_name;
+        j["hardware"]["nozzle_diameter"]  = machine->nozzle_diameter;
+
+        j["hardware"]["compat_printer_profiles"] = GetCompatPrinterConfigNames(
+            machine->get_preset_printer_model_name(machine->printer_type));
+
+        j["connection_info"]["dev_ip"]              = machine->dev_ip;
+        j["connection_info"]["dev_id"]              = machine->dev_id;
+        j["connection_info"]["dev_name"]            = machine->dev_name;
+        j["connection_info"]["dev_connection_type"] = machine->dev_connection_type;
+        j["connection_info"]["is_local"]            = machine->is_local();
+        j["connection_info"]["is_connected"]        = machine->is_connected();
+        j["connection_info"]["is_connecting"]       = machine->is_connecting();
+        j["connection_info"]["is_online"]           = machine->is_online();
+        j["connection_info"]["has_access_right"]    = machine->has_access_right();
+        j["connection_info"]["ftp_folder"]          = machine->get_ftp_folder();
+        j["connection_info"]["access_code"]         = machine->get_access_code();
+
+        // MachineObject State Info
+        j["state"]["can_print"]                  = machine->can_print();
+        j["state"]["can_resume"]                 = machine->can_resume();
+        j["state"]["can_pause"]                  = machine->can_pause();
+        j["state"]["can_abort"]                  = machine->can_abort();
+        j["state"]["is_in_printing"]             = machine->is_in_printing();
+        j["state"]["is_in_prepare"]              = machine->is_in_prepare();
+        j["state"]["is_printing_finished"]       = machine->is_printing_finished();
+        j["state"]["is_in_extrusion_cali"]       = machine->is_in_extrusion_cali();
+        j["state"]["is_extrusion_cali_finished"] = machine->is_extrusion_cali_finished();
+
+        // Current Job/Print Info
+        j["current"]["print_status"]    = machine->print_status;
+        j["current"]["print_time_left"] = machine->mc_left_time;
+        j["current"]["print_percent"]   = machine->mc_print_percent;
+        j["current"]["print_stage"]     = machine->mc_print_stage;
+        j["current"]["print_sub_stage"] = machine->mc_print_sub_stage;
+        j["current"]["curr_layer"]      = machine->curr_layer;
+        j["current"]["total_layers"]    = machine->total_layers;
+
+        // Temperatures
+        j["current"]["temperatures"]["nozzle_temp"]         = static_cast<int>(std::round(machine->nozzle_temp));
+        j["current"]["temperatures"]["nozzle_temp_target"]  = static_cast<int>(std::round(machine->nozzle_temp_target));
+        j["current"]["temperatures"]["bed_temp"]            = static_cast<int>(std::round(machine->bed_temp));
+        j["current"]["temperatures"]["bed_temp_target"]     = static_cast<int>(std::round(machine->bed_temp_target));
+        j["current"]["temperatures"]["chamber_temp"]        = static_cast<int>(std::round(machine->chamber_temp));
+        j["current"]["temperatures"]["chamber_temp_target"] = static_cast<int>(std::round(machine->chamber_temp_target));
+        j["current"]["temperatures"]["frame_temp"]          = static_cast<int>(std::round(machine->frame_temp));
+
+        // Cooling
+        j["current"]["cooling"]["heatbreak_fan_speed"] = machine->heatbreak_fan_speed;
+        j["current"]["cooling"]["cooling_fan_speed"]   = machine->cooling_fan_speed;
+        j["current"]["cooling"]["big_fan1_speed"]      = machine->big_fan1_speed;
+        j["current"]["cooling"]["big_fan2_speed"]      = machine->big_fan2_speed;
+        j["current"]["cooling"]["fan_gear"]            = machine->fan_gear;
+    }
+
+    return j;
+}
+
+json PrintagoDirector::GetCompatPrinterConfigNames(std::string printer_type)
+{
+    // Create a JSON object to hold arrays of config names for each source
+    json result;
+
+    // Iterate through each preset
+    for (Preset preset : wxGetApp().preset_bundle->printers.get_presets()) {
+        if (!preset.is_visible)
+            continue; // Skip hidden presets
+
+        // Variable to hold the source of the preset
+        wxString source = "";
+
+        // Determine the source of the preset
+        if (preset.is_system) {
+            source = "system";
+        } else if (preset.is_project_embedded) {
+            source = "project";
+        } else if (preset.is_user()) {
+            source = "user";
+        } else {
+            continue; // Skip this preset
+        }
+
+        // Check for matching printer models in vendor profiles
+        for (const auto& vendor_profile : wxGetApp().preset_bundle->vendors) {
+            for (const auto& vendor_model : vendor_profile.second.models) {
+                if (vendor_model.name == preset.config.opt_string("printer_model") && vendor_model.name == printer_type) {
+                    // If the JSON object doesn't have this source key yet, create it
+                    if (result.find(source.ToStdString()) == result.end()) {
+                        result[source.ToStdString()] = json::array();
+                    }
+                    // Add the preset name to the array corresponding to this source
+                    result[source.ToStdString()].push_back(preset.name);
+                }
+            }
+        }
+    }
+
+    return result;
+}
+
+json PrintagoDirector::GetConfigByName(wxString configType, wxString configName)
+{
+    json              result;
+    PresetBundle*     presetBundle = wxGetApp().preset_bundle;
+    PresetCollection* collection   = nullptr;
+
+    if (configType == "print") {
+        collection = &presetBundle->prints;
+    } else if (configType == "filament") {
+        collection = &presetBundle->filaments;
+    } else if (configType == "printer") {
+        collection = &presetBundle->printers;
+    } else {
+        json noresult;
+        return noresult;
+    }
+
+    const auto preset = collection->find_preset(configName.ToStdString());
+
+    json configJson = "";
+    if (preset) {
+        configJson = ConfigToJson(preset->config, preset->name, "", preset->version.to_string());
+    } else { // preset not found
+        json noresult;
+        return noresult;
+    }
+
+    wxString source = "default";
+    if (preset->is_system) {
+        source = "system";
+    } else if (preset->is_project_embedded) {
+        source = "project";
+    } else if (preset->is_user()) {
+        source = "user";
+    }
+
+    std::string collectionName = "none";
+    switch (collection->type()) {
+    case Preset::TYPE_PRINT: collectionName = "print"; break;
+    case Preset::TYPE_PRINTER: collectionName = "printer"; break;
+    case Preset::TYPE_FILAMENT: collectionName = "filament"; break;
+    default: break;
+    }
+    result["config_type"]    = collectionName;
+    result["config_source"]  = source.ToStdString();
+    result["config_name"]    = preset->name;
+    result["config_content"] = configJson;
+
+    if (collectionName == "printer") {
+        result["compat_filament_profiles"] = GetCompatFilamentConfigNames(*preset);
+        result["compat_print_profiles"]    = GetCompatPrintConfigNames(*preset);
+    }
+
+    return result;
+}
+
+json PrintagoDirector::ConfigToJson(const DynamicPrintConfig &config,
+                              const std::string &name,
+                              const std::string &from,
+                              const std::string &version,
+                              const std::string  is_custom)
+{
+    json j;
+    // record the headers
+    j[BBL_JSON_KEY_VERSION] = version;
+    j[BBL_JSON_KEY_NAME]    = name;
+    j[BBL_JSON_KEY_FROM]    = from;
+    if (!is_custom.empty())
+        j[BBL_JSON_KEY_IS_CUSTOM] = is_custom;
+
+    // record all the key-values
+    for (const std::string &opt_key : config.keys()) {
+        const ConfigOption *opt = config.option(opt_key);
+        if (opt->is_scalar()) {
+            if (opt->type() == coString && (opt_key != "bed_custom_texture" && opt_key != "bed_custom_model"))
+                // keep \n, \r, \t
+                j[opt_key] = (dynamic_cast<const ConfigOptionString *>(opt))->value;
+            else
+                j[opt_key] = opt->serialize();
+        } else {
+            const ConfigOptionVectorBase *vec = static_cast<const ConfigOptionVectorBase *>(opt);
+            std::vector<std::string> string_values = vec->vserialize();
+            json j_array(string_values);
+            j[opt_key] = j_array;
+        }
+    }
+
+    return j;
+}
+
+bool PrintagoDirector::SwitchSelectedPrinter(const wxString& printerId)
+{
+    // don't switch the UI if CanProcessJob() is false; we're slicing and stuff in the UI.
+    if (!PBJob::CanProcessJob())
+        return false;
+
+    auto machine = wxGetApp().getDeviceManager()->get_my_machine(printerId.ToStdString());
+    if (!machine)
+        return false;
+
+    // set the selected printer in the monitor UI.
+    try {
+        wxGetApp().mainframe->m_monitor->select_machine(printerId.ToStdString());
+    } catch (...) {
+        return false;
+    }
+
+    return true;
+}
+
+bool PrintagoDirector::SavePrintagoFile(const wxString url, wxFileName& localPath)
+{
+    wxURI    uri(url);
+    wxString path = uri.GetPath();
+
+    wxArrayString pathComponents = wxStringTokenize(path, "/");
+    wxString      uriFileName;
+    if (!pathComponents.IsEmpty()) {
+        uriFileName = pathComponents.Last();
+    } else {
+        return false;
+    }
+    // Remove any query string from the filename
+    size_t queryPos = uriFileName.find('?');
+    if (queryPos != wxString::npos) {
+        uriFileName = uriFileName.substr(0, queryPos);
+    }
+    // Construct the full path for the temporary file
+
+    fs::path tempDir = (fs::temp_directory_path());
+    tempDir /= PBJob::jobId.ToStdString();
+
+    boost::system::error_code ec;
+    if (!fs::create_directories(tempDir, ec)) {
+        if (ec) {
+            // there was an error creating the directory
+            int x = 5 + 1;
+        }
+    }
+
+    wxString wxTempDir(tempDir.string());
+
+    wxFileName fullFileName(wxTempDir, uriFileName);
+
+    if (DownloadFileFromURL(url, fullFileName)) {
+        wxLogMessage("File downloaded to: %s", fullFileName.GetFullPath());
+        localPath = fullFileName;
+        return true;
+    } else {
+        localPath = "";
+        return false;
+    }
+}
+
+bool PrintagoDirector::DownloadFileFromURL(const wxString url, const wxFileName& localFilename)
+{
+    boost::filesystem::path target_path = fs::path(localFilename.GetFullPath().ToStdString());
+    wxString                filename    = localFilename.GetFullName(); // just filename and extension
+    bool                    cont        = true;
+    bool                    download_ok = false;
+    int                     retry_count = 0;
+    int                     percent     = 1;
+    const int               max_retries = 3;
+    wxString                msg;
+
+    /* prepare project and profile */
+    boost::thread download_thread = Slic3r::create_thread(
+        [&percent, &cont, &retry_count, max_retries, &msg, &target_path, &download_ok, url, &filename] {
+            int          res = 0;
+            unsigned int http_code;
+            std::string  http_body;
+
+            fs::path tmp_path = target_path;
+            tmp_path += "." + std::to_string(get_current_pid()) + ".download";
+
+            if (fs::exists(target_path))
+                fs::remove(target_path);
+            if (fs::exists(tmp_path))
+                fs::remove(tmp_path);
+
+            auto http = Http::get(url.ToStdString());
+
+            while (cont && retry_count < max_retries) {
+                retry_count++;
+                http.on_progress([&percent, &cont, &msg](Http::Progress progress, bool& cancel) {
+                        if (!cont)
+                            cancel = true;
+                        if (progress.dltotal != 0) {
+                            percent = progress.dlnow * 100 / progress.dltotal;
+                        }
+                        msg = wxString::Format("Printago part file Downloaded %d%%", percent);
+                    })
+                    .on_error([&msg, &cont, &retry_count, max_retries](std::string body, std::string error, unsigned http_status) {
+                        (void) body;
+                        BOOST_LOG_TRIVIAL(error)
+                            << boost::str(boost::format("Error getting: `%1%`: HTTP %2%, %3%") % body % http_status % error);
+
+                        if (retry_count == max_retries) {
+                            msg  = boost::str(boost::format("Error getting: `%1%`: HTTP %2%, %3%") % body % http_status % error);
+                            cont = false;
+                        }
+                    })
+                    .on_complete([&cont, &download_ok, tmp_path, target_path](std::string body, unsigned /* http_status */) {
+                        fs::fstream file(tmp_path, std::ios::out | std::ios::binary | std::ios::trunc);
+                        file.write(body.c_str(), body.size());
+                        file.close();
+                        fs::rename(tmp_path, target_path);
+                        cont        = false;
+                        download_ok = true;
+                    })
+                    .perform_sync();
+            }
+        });
+
+    while (cont) {
+        wxMilliSleep(50);
+        if (download_ok)
+            break;
+    }
+
+    if (download_thread.joinable())
+        download_thread.join();
+
+    return download_ok;
 }
 
 } // namespace Slic3r

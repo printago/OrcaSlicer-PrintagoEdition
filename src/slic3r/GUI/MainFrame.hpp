@@ -379,7 +379,6 @@ public:
     wxWindow*             m_plater_page{ nullptr };
     PrintHostQueueDialog* m_printhost_queue_dlg;
 
-    
     mutable int m_print_select{ ePrintAll };
     mutable int m_slice_select{ eSliceAll };
     // Button* m_publish_btn{ nullptr };
