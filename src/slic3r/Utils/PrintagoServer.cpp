@@ -16,7 +16,7 @@
 namespace beef = boost::beast;
 using namespace Slic3r::GUI;
 
-namespace Slic3r {
+namespace Slic3r { namespace GUI {
 
 #define PRINTAGO_TEMP_THRESHOLD_ALLOW_E_CTRL 170.0f // Minimum temperature to allow extrusion control (per StatusPanel.cpp)
 
@@ -58,7 +58,7 @@ void PrintagoSession::on_read(beef::error_code ec, std::size_t bytes_transferred
     } else {
         ws_.text(ws_.got_text());
         const auto msg = beef::buffers_to_string(buffer_.data());
-        wxGetApp().printago_director()->ParseCommand(msg);
+        // wxGetApp().printago_director()->ParseCommand(msg);
         buffer_.consume(buffer_.size());
         do_read();
     }
@@ -303,7 +303,7 @@ bool PrintagoDirector::ParseCommand(const std::string& command)
     wxString      commandType, action;
 
     if (pathComponents.GetCount() != 3) {
-        wxGetApp().printago_director()->PostErrorMessage("", "", "", "invalid printago command");
+        // wxGetApp().printago_director()->PostErrorMessage("", "", "", "invalid printago command");
         return false;
     }
 
@@ -1224,4 +1224,4 @@ bool PrintagoDirector::DownloadFileFromURL(const wxString url, const wxFileName&
     return download_ok;
 }
 
-} // namespace Slic3r
+}} // namespace Slic3r

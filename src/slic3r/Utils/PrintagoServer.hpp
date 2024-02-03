@@ -21,7 +21,7 @@ namespace websocket = beef::websocket;
 namespace net       = boost::asio;
 using tcp           = net::ip::tcp;
 
-namespace Slic3r {
+namespace Slic3r { namespace GUI {
 
 static constexpr short PRINTAGO_PORT = 33647;
 
@@ -120,7 +120,7 @@ private:
 //``````````````````````````````````````````````````
 //------------------PrintagoResponse----------------
 //``````````````````````````````````````````````````
-class PrintagoResponse 
+class PrintagoResponse
 {
 public:
     PrintagoResponse() {}
@@ -200,9 +200,6 @@ public:
 
     bool ParseCommand(const std::string& command);
 
-    PrintagoDirector(const PrintagoDirector&)            = delete;
-    PrintagoDirector& operator=(const PrintagoDirector&) = delete;
-
 private:
     std::shared_ptr<net::io_context> _io_context;
     std::shared_ptr<PrintagoServer>  server;
@@ -210,39 +207,51 @@ private:
 
     Slic3r::GUI::SelectMachineDialog* m_select_machine_dlg = nullptr;
 
-    void PostStatusMessage   (const wxString printer_id, const json statusData,       const wxString command = "");
-    void PostResponseMessage (const wxString printer_id, const json responseData,     const wxString command = "");
-    void PostSuccessMessage  (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString localCommandDetail = "");
-    void PostErrorMessage    (const wxString printer_id, const wxString localCommand, const wxString command = "", const wxString errorDetail = "");
+    void PostStatusMessage(const wxString printer_id, const json statusData, const wxString command = "");
+    void PostResponseMessage(const wxString printer_id, const json responseData, const wxString command = "");
+    void PostSuccessMessage(const wxString printer_id,
+                            const wxString localCommand,
+                            const wxString command            = "",
+                            const wxString localCommandDetail = "");
+    void PostErrorMessage(const wxString printer_id,
+                          const wxString localCommand,
+                          const wxString command     = "",
+                          const wxString errorDetail = "");
 
     void _PostResponse(const PrintagoResponse response);
 
     wxStringToStringHashMap _ParseQueryString(const wxString& queryString);
 
-    bool ValidatePrintagoCommand(const PrintagoCommand& cmd);
-    bool ProcessPrintagoCommand(const PrintagoCommand& command);
+    bool                         ValidatePrintagoCommand(const PrintagoCommand& cmd);
+    bool                         ProcessPrintagoCommand(const PrintagoCommand& command);
     std::map<wxString, wxString> ExtractPrefixedParams(const wxStringToStringHashMap& params, const wxString& prefix);
 
-    json        GetAllStatus();
-    void        AddCurrentProcessJsonTo(json& statusObject);
-    json        GetMachineStatus(const wxString& printerId);
-    json        GetMachineStatus(MachineObject* machine);
-    json        MachineObjectToJson(MachineObject* machine);
-    json        ConfigToJson(const DynamicPrintConfig &config, const std::string &name, const std::string &from, const std::string &version, const std::string is_custom = "");
+    json GetAllStatus();
+    void AddCurrentProcessJsonTo(json& statusObject);
+    json GetMachineStatus(const wxString& printerId);
+    json GetMachineStatus(MachineObject* machine);
+    json MachineObjectToJson(MachineObject* machine);
+    json ConfigToJson(const DynamicPrintConfig& config,
+                      const std::string&        name,
+                      const std::string&        from,
+                      const std::string&        version,
+                      const std::string         is_custom = "");
 
-    json GetCompatOtherConfigsNames(Preset::Type preset_type, const Preset &printerPreset);
-    json GetCompatFilamentConfigNames(const Preset &printerPreset) { return GetCompatOtherConfigsNames(Preset::TYPE_FILAMENT, printerPreset); }
-    json GetCompatPrintConfigNames(const Preset &printerPreset)    { return GetCompatOtherConfigsNames(Preset::TYPE_PRINT   , printerPreset); }
+    json GetCompatOtherConfigsNames(Preset::Type preset_type, const Preset& printerPreset);
+    json GetCompatFilamentConfigNames(const Preset& printerPreset)
+    {
+        return GetCompatOtherConfigsNames(Preset::TYPE_FILAMENT, printerPreset);
+    }
+    json GetCompatPrintConfigNames(const Preset& printerPreset) { return GetCompatOtherConfigsNames(Preset::TYPE_PRINT, printerPreset); }
 
-    bool IsConfigCompatWithPrinter(const PresetWithVendorProfile &preset, const Preset &printerPreset);
-    bool IsConfigCompatWithParent(const PresetWithVendorProfile &preset, const PresetWithVendorProfile &active_printer);
+    bool IsConfigCompatWithPrinter(const PresetWithVendorProfile& preset, const Preset& printerPreset);
+    bool IsConfigCompatWithParent(const PresetWithVendorProfile& preset, const PresetWithVendorProfile& active_printer);
 
     std::string GetConfigNameFromJsonFile(const wxString& FilePath);
     json        GetConfigByName(wxString configType, wxString configName);
     json        GetCompatPrinterConfigNames(std::string printer_type);
     void        ImportPrintagoConfigs();
     void        SetPrintagoConfigs();
-    
 
     bool SwitchSelectedPrinter(const wxString& printerId);
 
@@ -250,6 +259,6 @@ private:
     bool DownloadFileFromURL(const wxString url, const wxFileName& localPath);
 };
 
-} // namespace Slic3r
+}} // namespace Slic3r::GUI
 
 #endif // PRINTAGOSERVER_HPP

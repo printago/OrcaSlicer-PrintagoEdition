@@ -57,7 +57,7 @@ class ModelObject;
 class Model;
 class DeviceManager;
 class NetworkAgent;
-class PrintagoDirector;
+
 
 namespace GUI{
 
@@ -75,7 +75,6 @@ struct GUI_InitParams;
 class ParamsDialog;
 class HMSQuery;
 class ModelMallDialog;
-
 
 enum FileType
 {
@@ -545,8 +544,6 @@ private:
     ParamsDialog*        params_dialog();
     Model&      		 model();
     NotificationManager * notification_manager();
-    PrintagoDirector*    printago_director();
-
 
     std::string         m_mall_model_download_url;
     std::string         m_mall_model_download_name;
@@ -577,7 +574,6 @@ private:
     PresetUpdater*    preset_updater{ nullptr };
     MainFrame*        mainframe{ nullptr };
     Plater*           plater_{ nullptr };
-    PrintagoDirector* printago_director_{ nullptr };
 
 	PresetUpdater*  get_preset_updater() { return preset_updater; }
 
