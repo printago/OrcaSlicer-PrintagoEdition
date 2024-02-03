@@ -2774,6 +2774,8 @@ bool GUI_App::on_init_inner()
 
     });
 
+    printago_director_ = new PrintagoDirector();
+
     m_initialized = true;
     flush_logs();
 
@@ -6006,6 +6008,11 @@ Plater* GUI_App::plater()
 const Plater* GUI_App::plater() const
 {
     return plater_;
+}
+
+PrintagoDirector* GUI_App::printago_director()
+{
+    return printago_director_;
 }
 
 ParamsPanel* GUI_App::params_panel()
