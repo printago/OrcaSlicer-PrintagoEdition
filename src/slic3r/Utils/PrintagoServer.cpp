@@ -1284,7 +1284,7 @@ void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
         return;
     }
 
-    PBJob::progress = 100;
+    PBJob::progress = 99;
     PostJobUpdateMessage();
 
     const wxString pid(PBJob::printerId);
