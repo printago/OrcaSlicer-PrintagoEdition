@@ -103,6 +103,9 @@
 #include "ModelMall.hpp"
 #include "HintNotification.hpp"
 
+//Printago:
+#include "PrintagoServer.hpp"
+
 //#ifdef WIN32
 //#include "BaseException.h"
 //#endif

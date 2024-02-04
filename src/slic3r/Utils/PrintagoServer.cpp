@@ -10,13 +10,11 @@
 #include "slic3r/GUI/GUI_App.hpp"
 #include "slic3r/GUI/Tab.hpp"
 
-
-// #include "slic3r/GUI/SelectMachine.hpp"
-
 namespace beef = boost::beast;
 using namespace Slic3r::GUI;
 
 namespace Slic3r {
+
 
 #define PRINTAGO_TEMP_THRESHOLD_ALLOW_E_CTRL 170.0f // Minimum temperature to allow extrusion control (per StatusPanel.cpp)
 
@@ -156,6 +154,10 @@ bool PBJob::SetCanProcessJob(const bool can_process_job)
         progress = 0;
         jobId    = "ptgo_default";
 
+        use_ams = false;
+        bbl_do_bed_leveling = false;
+        bbl_do_flow_cali = false;
+
         // wxGetApp().mainframe->m_tabpanel->Enable();
         // wxGetApp().mainframe->m_topbar->Enable();
     } else {
@@ -180,6 +182,8 @@ PrintagoDirector::PrintagoDirector()
     // Start the server on a separate thread
     server_thread = std::thread([this] { _io_context->run(); });
     server_thread.detach(); // Detach the thread
+
+    Bind(EVT_PROCESS_COMPLETED, &PrintagoDirector::OnSlicingCompleted, this);
     
     // Initialize other members as needed
     m_select_machine_dlg = new Slic3r::GUI::SelectMachineDialog(/* constructor arguments if any */);
@@ -592,11 +596,23 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             if (!printagoId.empty()) {
                 PBJob::jobId = printagoId;
             }
-
+            
             PBJob::printerId = printerId;
             PBJob::command   = originalCommandStr;
             PBJob::localFile = "";
 
+            PBJob::use_ams = printer->has_ams() && parameters.count("use_ams") && parameters["use_ams"].ToStdString() == "true";
+            PBJob::bbl_do_bed_leveling = parameters.count("do_bed_leveling") && parameters["do_bed_leveling"].ToStdString() == "true";
+            PBJob::bbl_do_flow_cali = parameters.count("do_flow_cali") && parameters["do_flow_cali"].ToStdString() == "true";
+            
+            if (parameters.count("bed_type")) {
+                PBJob::bed_type = PBJob::StringToBedType(parameters["bed_type"].ToStdString());   
+            } else {
+                PostErrorMessage(printerId, action, originalCommandStr, "missing bed_type (cool_plate, eng_plate, warm_plate, textured_pei)");
+                return false;
+            }
+            
+            
             if (!m_select_machine_dlg)
                 m_select_machine_dlg = new SelectMachineDialog(wxGetApp().plater());
 
@@ -657,6 +673,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             // Loads the configs into the UI, if able; selects them in the dropdowns.
             ImportPrintagoConfigs();
             SetPrintagoConfigs();
+            wxGetApp().plater()->sidebar().on_bed_type_change(PBJob::bed_type);
 
             try {
                 if (!PBJob::localFile.GetExt().MakeUpper().compare("3MF")) {
@@ -1223,5 +1240,55 @@ bool PrintagoDirector::DownloadFileFromURL(const wxString url, const wxFileName&
 
     return download_ok;
 }
+
+void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent& evt)
+{
+    
+    // in case we got here by mistake and there's nothing we're trying to process; return silently.
+    if (PBJob::printerId.IsEmpty() || !m_select_machine_dlg || PBJob::CanProcessJob()) {
+        PBJob::UnblockJobProcessing();
+        return;
+    }
+    const wxString action = "start_print_bbl";
+    wxString       actionDetail;
+    
+    if (!evt.success()) {
+        actionDetail = "slicing Unknown Error: " + PBJob::localFile.GetFullPath();
+        if (evt.cancelled())
+            actionDetail = "slicing cancelled: " + PBJob::localFile.GetFullPath();
+        else if (evt.error())
+            actionDetail = "slicing error: " + PBJob::localFile.GetFullPath();
+        PostErrorMessage(PBJob::printerId, action, PBJob::command, actionDetail);
+        return;
+    }
+    
+    // Slicing Success -> Send to the Printer
+    PBJob::serverState = PBJob::JobServerState::Sending;
+    PBJob::progress    = 75;
+    actionDetail   = wxString::Format("send_to_printer: %s", PBJob::localFile.GetFullName());
+    
+    m_select_machine_dlg->set_print_type(PrintFromType::FROM_NORMAL);
+    m_select_machine_dlg->prepare(0);
+    
+    m_select_machine_dlg->SetPrinter(PBJob::printerId.ToStdString());
+    auto selectedPrinter = wxGetApp().getDeviceManager()->get_selected_machine();
+    if (selectedPrinter->dev_id != PBJob::printerId.ToStdString() && !selectedPrinter->is_connected()) {
+        wxGetApp().getDeviceManager()->set_selected_machine(PBJob::printerId.ToStdString(), false);
+    }
+
+    if (selectedPrinter->has_ams()) {
+        m_select_machine_dlg->SetCheckboxOption("use_ams", PBJob::use_ams);
+    } else {
+        m_select_machine_dlg->SetCheckboxOption("use_ams", false);
+    }
+    // ["timelapse"]["bed_leveling"]["flow_cali"]
+    m_select_machine_dlg->SetCheckboxOption("timelapse", false);
+    m_select_machine_dlg->SetCheckboxOption("bed_leveling", PBJob::bbl_do_bed_leveling);
+    m_select_machine_dlg->SetCheckboxOption("flow_cali", PBJob::bbl_do_flow_cali);
+
+    wxCommandEvent btnEvt(wxGetApp().mainframe->GetId());
+    // m_select_machine_dlg->on_ok_btn(btnEvt);
+}
+
 
 } // namespace Slic3r

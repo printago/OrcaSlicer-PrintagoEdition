@@ -12,6 +12,7 @@
 
 #include "nlohmann/json.hpp"
 #include "slic3r/GUI/SelectMachine.hpp"
+#include "slic3r/GUI/BackgroundSlicingProcess.hpp"
 
 using namespace nlohmann;
 namespace beef      = boost::beast;
@@ -20,6 +21,7 @@ namespace net       = boost::asio;
 using tcp           = net::ip::tcp;
 
 namespace Slic3r {
+
 
 static constexpr short PRINTAGO_PORT = 33647;
 
@@ -179,7 +181,23 @@ public:
     inline static wxString                                    command;
     inline static wxFileName                                  localFile;
     inline static std::unordered_map<std::string, wxFileName> configFiles;
+
+    inline static bool     use_ams             = false;
+    inline static bool     bbl_do_bed_leveling = false;
+    inline static bool     bbl_do_flow_cali    = false;
+    inline static BedType  bed_type            = BedType::btDefault;
+
     inline static int                                         progress = 0;
+
+    inline static BedType StringToBedType(const std::string& bedType)
+    {
+        if (bedType == "cool_plate") return BedType::btPC;
+        else if (bedType == "eng_plate") return BedType::btEP;
+        else if (bedType == "warm_plate") return BedType::btPEI;
+        else if (bedType == "textured_pei") return BedType::btPTE;
+        else bed_type = BedType::btDefault;
+    }
+    
 
     // Public getter for m_can_process_job
     static bool CanProcessJob() { return m_can_process_job; }
@@ -190,7 +208,7 @@ public:
 //``````````````````````````````````````````````````
 //------------------PrintagoDirector----------------
 //``````````````````````````````````````````````````
-class PrintagoDirector
+class PrintagoDirector : wxEvtHandler
 {
 public:
     PrintagoDirector();
@@ -243,6 +261,8 @@ private:
 
     bool SavePrintagoFile(const wxString url, wxFileName& localPath);
     bool DownloadFileFromURL(const wxString url, const wxFileName& localPath);
+
+    void OnSlicingCompleted(SlicingProcessCompletedEvent& evt);
 };
 
 } // namespace Slic3r

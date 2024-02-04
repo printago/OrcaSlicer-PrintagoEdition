@@ -6599,6 +6599,8 @@ void Plater::priv::on_process_completed(SlicingProcessCompletedEvent &evt)
         }
     }
 
+    // auto *clonedEvent = evt.Clone();
+    // wxGetApp().printago_director()->on_slicing_completed(clonedEvent);
     // if (wxGetApp().mainframe->m_printago != nullptr && !wxGetApp().mainframe->m_printago->CanProcessJob()) {
     //     wxEvent *clonedEvent = evt.Clone();
     //     wxQueueEvent(wxGetApp().mainframe->m_printago, clonedEvent);

@@ -22,7 +22,6 @@
 #include "Auxiliary.hpp"
 #include "Project.hpp"
 #include "CalibrationPanel.hpp"
-#include "PrintagoPanel.hpp"
 #include "UnsavedChangesDialog.hpp"
 #include "Widgets/SideButton.hpp"
 #include "Widgets/SideMenuPopup.hpp"
@@ -31,7 +30,6 @@
 #include "BBLTopbar.hpp"
 #include "PrinterWebView.hpp"
 #include "calib_dlg.hpp"
-#include "PrintagoServer.hpp"
 
 #define ENABEL_PRINT_ALL 0
 
@@ -225,9 +223,8 @@ public:
         tpMonitor       = 3,
         tpProject       = 4,
         tpCalibration   = 5,
-        tpPrintago      = 6,
-        tpAuxiliary     = 7,
-        toDebugTool     = 8,
+        tpAuxiliary     = 6,
+        toDebugTool     = 7,
     };
 
     //BBS: add slice&&print status update logic

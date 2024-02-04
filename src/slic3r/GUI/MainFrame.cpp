@@ -79,9 +79,6 @@
 #endif // _WIN32
 #include <slic3r/GUI/CreatePresetsDialog.hpp>
 
-#include "PrintagoServer.hpp"
-
-
 namespace Slic3r {
 namespace GUI {
 
@@ -101,8 +98,6 @@ wxDEFINE_EVENT(EVT_UPDATE_PRESET_CB, SimpleEvent);
 wxDEFINE_EVENT(EVT_BACKUP_POST, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOAD_URL, wxCommandEvent);
 wxDEFINE_EVENT(EVT_LOAD_PRINTER_URL, LoadPrinterViewEvent);
-
-wxDEFINE_EVENT(EVT_LOAD_PRINTAGO_URL, wxCommandEvent);
 
 enum class ERescaleTarget
 {
@@ -1079,17 +1074,6 @@ void MainFrame::init_tabpanel() {
     m_calibration = new CalibrationPanel(m_tabpanel, wxID_ANY, wxDefaultPosition, wxDefaultSize);
     m_calibration->SetBackgroundColour(*wxWHITE);
     m_tabpanel->AddPage(m_calibration, _L("Calibration"), std::string("tab_monitor_active"), std::string("tab_monitor_active"), false);
-
-    // wxString printago_url = "http://localhost:3000/testInterface.html";
-    // m_printago = new PrintagoPanel(m_tabpanel, &printago_url);
-    // Bind(EVT_LOAD_PRINTAGO_URL, [this](wxCommandEvent &evt) {
-    //     wxString url = evt.GetString();
-    //     m_printago->load_url(url);
-    // });
-    // m_tabpanel->AddPage(m_printago, _L("Printago"), std::string("printago_small"), std::string("printago_small"));
-    
-
-    // CallAfter([=] { PrintagoDirector::Instance()->init(); });
 
     if (m_plater) {
         // load initial config
