@@ -526,7 +526,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
         return false;
     }
     // Find the printer in the machine list
-    auto machineList = GUI_App().getDeviceManager()->get_my_machine_list();
+    auto machineList = wxGetApp().getDeviceManager()->get_my_machine_list();
     auto it          = std::find_if(machineList.begin(), machineList.end(),
                                     [&printerId](const std::pair<std::string, MachineObject*>& pair) { return pair.second->dev_id == printerId; });
 

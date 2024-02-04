@@ -11,8 +11,6 @@
 #include <utility>
 
 #include "nlohmann/json.hpp"
-#include "slic3r/GUI/PrintagoPanel.hpp"
-
 #include "slic3r/GUI/SelectMachine.hpp"
 
 using namespace nlohmann;
@@ -159,7 +157,7 @@ class PBJob
 {
 private:
     static bool        SetCanProcessJob(const bool can_process_job);
-    inline static bool m_can_process_job;
+    inline static bool m_can_process_job = true;
 
 public:
     enum class JobServerState { Idle, Download, Configure, Slicing, Sending };
@@ -199,9 +197,6 @@ public:
     ~PrintagoDirector();
 
     bool ParseCommand(const std::string& command);
-
-    PrintagoDirector(const PrintagoDirector&)            = delete;
-    PrintagoDirector& operator=(const PrintagoDirector&) = delete;
 
 private:
     std::shared_ptr<net::io_context> _io_context;
