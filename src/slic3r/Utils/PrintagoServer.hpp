@@ -22,7 +22,6 @@ using tcp           = net::ip::tcp;
 
 namespace Slic3r {
 
-
 static constexpr short PRINTAGO_PORT = 33647;
 
 void printago_ws_error(beef::error_code ec, char const* what);
@@ -120,7 +119,7 @@ private:
 //``````````````````````````````````````````````````
 //------------------PrintagoResponse----------------
 //``````````````````````````````````````````````````
-class PrintagoResponse 
+class PrintagoResponse
 {
 public:
     PrintagoResponse() {}
@@ -155,15 +154,15 @@ private:
 //``````````````````````````````````````````````````
 //------------------PBJob (Printago Blocking Job)---
 //``````````````````````````````````````````````````
+enum class JobServerState { Idle, Download, Configure, Slicing, Sending };
 class PBJob
 {
 private:
-    static bool        SetCanProcessJob(const bool can_process_job);
-    inline static bool m_can_process_job = true;
+    static bool                  SetCanProcessJob(const bool can_process_job);
+    inline static bool           m_can_process_job = true;
 
 public:
-    enum class JobServerState { Idle, Download, Configure, Slicing, Sending };
-    operator std::string() const
+    inline static std::string serverStateStr()
     {
         switch (serverState) {
         case JobServerState::Idle: return "idle";
@@ -171,33 +170,36 @@ public:
         case JobServerState::Configure: return "configure";
         case JobServerState::Slicing: return "slicing";
         case JobServerState::Sending: return "sending";
-        default: return "unknown";
         }
     }
 
     inline static JobServerState                              serverState = JobServerState::Idle;
-    inline static wxString                                    jobId       = "ptgo_default";
+    inline static wxString                                    jobId = "ptgo_default";
     inline static wxString                                    printerId;
     inline static wxString                                    command;
     inline static wxFileName                                  localFile;
     inline static std::unordered_map<std::string, wxFileName> configFiles;
 
-    inline static bool     use_ams             = false;
-    inline static bool     bbl_do_bed_leveling = false;
-    inline static bool     bbl_do_flow_cali    = false;
-    inline static BedType  bed_type            = BedType::btDefault;
+    inline static bool    use_ams             = false;
+    inline static bool    bbl_do_bed_leveling = false;
+    inline static bool    bbl_do_flow_cali    = false;
+    inline static BedType bed_type            = BedType::btDefault;
 
-    inline static int                                         progress = 0;
+    inline static int progress = 0;
 
     inline static BedType StringToBedType(const std::string& bedType)
     {
-        if (bedType == "cool_plate") return BedType::btPC;
-        else if (bedType == "eng_plate") return BedType::btEP;
-        else if (bedType == "warm_plate") return BedType::btPEI;
-        else if (bedType == "textured_pei") return BedType::btPTE;
-        else bed_type = BedType::btDefault;
+        if (bedType == "cool_plate")
+            return BedType::btPC;
+        else if (bedType == "eng_plate")
+            return BedType::btEP;
+        else if (bedType == "warm_plate")
+            return BedType::btPEI;
+        else if (bedType == "textured_pei")
+            return BedType::btPTE;
+        else
+            bed_type = BedType::btDefault;
     }
-    
 
     // Public getter for m_can_process_job
     static bool CanProcessJob() { return m_can_process_job; }
@@ -208,13 +210,21 @@ public:
 //``````````````````````````````````````````````````
 //------------------PrintagoDirector----------------
 //``````````````````````````````````````````````````
-class PrintagoDirector : wxEvtHandler
+class PrintagoDirector
 {
 public:
     PrintagoDirector();
     ~PrintagoDirector();
 
     bool ParseCommand(const std::string& command);
+    void OnSlicingCompleted(SlicingProcessCompletedEvent::StatusType slicing_result);
+    void OnPrintJobSent(wxString printerId, bool success);
+
+    void ResetMachineDialog()
+    {
+        delete m_select_machine_dlg;
+        m_select_machine_dlg = nullptr;
+    }
 
 private:
     std::shared_ptr<net::io_context> _io_context;
@@ -261,8 +271,6 @@ private:
 
     bool SavePrintagoFile(const wxString url, wxFileName& localPath);
     bool DownloadFileFromURL(const wxString url, const wxFileName& localPath);
-
-    void OnSlicingCompleted(SlicingProcessCompletedEvent& evt);
 };
 
 } // namespace Slic3r

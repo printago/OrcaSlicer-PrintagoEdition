@@ -8,6 +8,7 @@
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/format.hpp"
 #include "bambu_networking.hpp"
+#include "PrintagoServer.hpp"
 
 namespace Slic3r {
 namespace GUI {
@@ -547,11 +548,11 @@ void PrintJob::process(Ctl &ctl)
         if (result != BAMBU_NETWORK_ERR_CANCELED) {
             ctl.show_error_info(msg_text, 0, "", "");
         }
-        // if (wxGetApp().mainframe->m_printago != nullptr && !wxGetApp().mainframe->m_printago->CanProcessJob()) {
-        //     wxCommandEvent *event = new wxCommandEvent(PRINTAGO_PRINT_SENT_EVENT);
-        //     event->SetString("ERROR");
-        //     wxQueueEvent(wxGetApp().mainframe->m_printago, event);
-        // }
+
+        if (!PBJob::CanProcessJob()) {
+            wxGetApp().printago_director()->OnPrintJobSent(m_dev_id, false);
+        }
+
         BOOST_LOG_TRIVIAL(error) << "print_job: failed, result = " << result;
     } else {
         // wait for printer mqtt ready the same job id
@@ -572,14 +573,9 @@ void PrintJob::process(Ctl &ctl)
         }
         wxQueueEvent(m_plater, evt);
 
-        // if (wxGetApp().mainframe->m_printago != nullptr && !wxGetApp().mainframe->m_printago->CanProcessJob()) {
-        //     wxCommandEvent *event = new wxCommandEvent(PRINTAGO_PRINT_SENT_EVENT);
-        //     if (!m_completed_evt_data.empty())
-        //         event->SetString(m_completed_evt_data);
-        //     else
-        //         event->SetString(m_dev_id);
-        //     wxQueueEvent(wxGetApp().mainframe->m_printago, event);
-        // }
+        if (!PBJob::CanProcessJob()) {
+            wxGetApp().printago_director()->OnPrintJobSent(m_dev_id, true);
+        }
 
         m_job_finished = true;
     }

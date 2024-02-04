@@ -1,3 +1,5 @@
+// #include "PrintagoPanel.hpp"
+//
 // #include "WebViewDialog.hpp"
 //
 // #include "I18N.hpp"
@@ -1012,7 +1014,7 @@
 //     m_select_machine_dlg->set_print_type(PrintFromType::FROM_NORMAL);
 //     m_select_machine_dlg->prepare(0);
 //
-//     m_select_machine_dlg->setPrinterLastSelect(jobPrinterId.ToStdString());
+//     m_select_machine_dlg->SetPrinter(jobPrinterId.ToStdString());
 //     auto selectedPrinter = devManager->get_selected_machine();
 //     if (selectedPrinter->dev_id != jobPrinterId.ToStdString() && !selectedPrinter->is_connected()) {
 //         devManager->set_selected_machine(jobPrinterId.ToStdString(), false);

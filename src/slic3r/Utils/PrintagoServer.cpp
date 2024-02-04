@@ -158,6 +158,8 @@ bool PBJob::SetCanProcessJob(const bool can_process_job)
         bbl_do_bed_leveling = false;
         bbl_do_flow_cali = false;
 
+        wxGetApp().printago_director()->ResetMachineDialog();
+
         // wxGetApp().mainframe->m_tabpanel->Enable();
         // wxGetApp().mainframe->m_topbar->Enable();
     } else {
@@ -182,11 +184,6 @@ PrintagoDirector::PrintagoDirector()
     // Start the server on a separate thread
     server_thread = std::thread([this] { _io_context->run(); });
     server_thread.detach(); // Detach the thread
-
-    Bind(EVT_PROCESS_COMPLETED, &PrintagoDirector::OnSlicingCompleted, this);
-    
-    // Initialize other members as needed
-    m_select_machine_dlg = new Slic3r::GUI::SelectMachineDialog(/* constructor arguments if any */);
 }
 
 PrintagoDirector::~PrintagoDirector()
@@ -205,7 +202,7 @@ PrintagoDirector::~PrintagoDirector()
 
 void PrintagoDirector::PostErrorMessage(const wxString printer_id, const wxString localCommand, const wxString command, const wxString errorDetail)
 {
-    if (PBJob::CanProcessJob()) {
+    if (!PBJob::CanProcessJob()) {
         PBJob::UnblockJobProcessing();
     }
 
@@ -611,8 +608,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 PostErrorMessage(printerId, action, originalCommandStr, "missing bed_type (cool_plate, eng_plate, warm_plate, textured_pei)");
                 return false;
             }
-            
-            
+
             if (!m_select_machine_dlg)
                 m_select_machine_dlg = new SelectMachineDialog(wxGetApp().plater());
 
@@ -636,13 +632,13 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 filamentConfUrl  = Http::url_decode(filamentConfUrl.ToStdString());
             }
 
-            PBJob::serverState = PBJob::JobServerState::Download;
+            PBJob::serverState = JobServerState::Download;
             PBJob::progress = 10;
 
             // Second param is reference and modified inside SavePrintagoFile.
             if (SavePrintagoFile(printagoModelUrl, PBJob::localFile)) {
             } else {
-                PostErrorMessage(printerId, wxString::Format("%s:%s", action, PBJob::serverState), originalCommandStr,
+                PostErrorMessage(printerId, wxString::Format("%s:%s", action, PBJob::serverStateStr()), originalCommandStr,
                                     "model download failed");
                 return false;
             }
@@ -653,7 +649,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             if (SavePrintagoFile(printerConfUrl, localPrinterConf) && SavePrintagoFile(filamentConfUrl, localFilamentConf) &&
                 SavePrintagoFile(printConfUrl, localPrintConf)) {
             } else {
-                PostErrorMessage(printerId, wxString::Format("%s:%s", action, PBJob::serverState), originalCommandStr,
+                PostErrorMessage(printerId, wxString::Format("%s:%s", action, PBJob::serverStateStr()), originalCommandStr,
                                     "config download failed");
                 return false;
             }
@@ -662,7 +658,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             PBJob::configFiles["filament"] = localFilamentConf;
             PBJob::configFiles["print"]    = localPrintConf;
 
-            PBJob::serverState = PBJob::JobServerState::Configure;
+            PBJob::serverState = JobServerState::Configure;
             PBJob::progress = 30;
 
             wxGetApp().mainframe->select_tab(1);
@@ -688,12 +684,12 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                     wxGetApp().plater()->load_files(filePathArray, strategy, false);
                 }
             } catch (...) {
-                PostErrorMessage(PBJob::printerId, wxString::Format("%s:%s", "start_print_bbl", PBJob::serverState), PBJob::command,
+                PostErrorMessage(PBJob::printerId, wxString::Format("%s:%s", "start_print_bbl", PBJob::serverStateStr()), PBJob::command,
                                     "and error occurred loading the model and config");
                 return false;
             }
 
-            PBJob::serverState = PBJob::JobServerState::Slicing;
+            PBJob::serverState = JobServerState::Slicing;
             PBJob::progress    = 45;
 
             wxGetApp().plater()->select_plate(0, true);
@@ -879,10 +875,15 @@ void PrintagoDirector::AddCurrentProcessJsonTo(json& statusObject)
 {
     statusObject["process"]["can_process_job"] = PBJob::CanProcessJob();
     statusObject["process"]["job_id"]         = PBJob::jobId.ToStdString();
-    statusObject["process"]["job_state"]      = PBJob::serverState;
+    statusObject["process"]["job_state"]      = PBJob::serverStateStr();
     statusObject["process"]["job_machine"]    = PBJob::printerId.ToStdString();
     statusObject["process"]["job_local_file"] = PBJob::localFile.GetFullPath().ToStdString();
     statusObject["process"]["job_progress"]   = PBJob::progress;
+
+    statusObject["process"]["bed_level"]      = PBJob::bbl_do_bed_leveling;
+    statusObject["process"]["flow_calibr"]    = PBJob::bbl_do_flow_cali;
+    statusObject["process"]["bed_type"]       = PBJob::bed_type;
+    statusObject["process"]["use_ams"]        = PBJob::use_ams;
 
     statusObject["software"]["is_dark_mode"] = wxGetApp().dark_mode();
 }
@@ -1241,9 +1242,8 @@ bool PrintagoDirector::DownloadFileFromURL(const wxString url, const wxFileName&
     return download_ok;
 }
 
-void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent& evt)
+void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusType slicing_result)
 {
-    
     // in case we got here by mistake and there's nothing we're trying to process; return silently.
     if (PBJob::printerId.IsEmpty() || !m_select_machine_dlg || PBJob::CanProcessJob()) {
         PBJob::UnblockJobProcessing();
@@ -1252,18 +1252,18 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent& evt)
     const wxString action = "start_print_bbl";
     wxString       actionDetail;
     
-    if (!evt.success()) {
+    if (slicing_result != SlicingProcessCompletedEvent::StatusType::Finished) {
         actionDetail = "slicing Unknown Error: " + PBJob::localFile.GetFullPath();
-        if (evt.cancelled())
+        if (slicing_result == SlicingProcessCompletedEvent::StatusType::Cancelled)
             actionDetail = "slicing cancelled: " + PBJob::localFile.GetFullPath();
-        else if (evt.error())
+        else if (slicing_result == SlicingProcessCompletedEvent::StatusType::Error)
             actionDetail = "slicing error: " + PBJob::localFile.GetFullPath();
         PostErrorMessage(PBJob::printerId, action, PBJob::command, actionDetail);
         return;
     }
     
     // Slicing Success -> Send to the Printer
-    PBJob::serverState = PBJob::JobServerState::Sending;
+    PBJob::serverState = JobServerState::Sending;
     PBJob::progress    = 75;
     actionDetail   = wxString::Format("send_to_printer: %s", PBJob::localFile.GetFullName());
     
@@ -1281,13 +1281,35 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent& evt)
     } else {
         m_select_machine_dlg->SetCheckboxOption("use_ams", false);
     }
-    // ["timelapse"]["bed_leveling"]["flow_cali"]
     m_select_machine_dlg->SetCheckboxOption("timelapse", false);
     m_select_machine_dlg->SetCheckboxOption("bed_leveling", PBJob::bbl_do_bed_leveling);
     m_select_machine_dlg->SetCheckboxOption("flow_cali", PBJob::bbl_do_flow_cali);
 
-    wxCommandEvent btnEvt(wxGetApp().mainframe->GetId());
-    // m_select_machine_dlg->on_ok_btn(btnEvt);
+    
+    wxGetApp().CallAfter([=] {
+        wxCommandEvent btnEvt(wxGetApp().mainframe->GetId());
+        m_select_machine_dlg->on_ok_btn(btnEvt);
+    });
+}
+
+void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
+{
+    // in case we got here by mistake and there's nothing we're trying to process; return silently.
+    if (PBJob::printerId.IsEmpty() || !m_select_machine_dlg || PBJob::CanProcessJob()) {
+        PBJob::UnblockJobProcessing();
+        return;
+    }
+    if (!success) {
+        PostErrorMessage(PBJob::printerId, "start_print_bbl", PBJob::command, "an error occurred sending the print job.");
+        return;
+    }
+
+    // Hack so SendSuccessMessage is the last thing we do before unblocking.
+    const wxString pid(PBJob::printerId);
+    const wxString cmd(PBJob::command);
+
+    PBJob::UnblockJobProcessing();
+    PostSuccessMessage(pid, "start_print_bbl", cmd, wxString::Format("print sent to: %s", printerId));
 }
 
 
