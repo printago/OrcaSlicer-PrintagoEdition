@@ -198,7 +198,7 @@ public:
         else if (bedType == "textured_pei")
             return BedType::btPTE;
         else
-            bed_type = BedType::btDefault;
+            return BedType::btDefault;
     }
 
     // Public getter for m_can_process_job
