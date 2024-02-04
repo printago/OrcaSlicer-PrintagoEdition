@@ -6270,6 +6270,21 @@ void Plater::priv::on_slicing_update(SlicingStatusEvent &evt)
             }
         }
     }
+
+    if (!PBJob::CanProcessJob()) {
+                
+        int start = 25;
+        int end = 90;
+        int previousePercent = PBJob::progress;
+
+        double overallProgress = start + (end - start) * (evt.status.percent / 100.0);
+        PBJob::progress = std::round(overallProgress);
+
+        if (previousePercent != PBJob::progress) {
+            wxGetApp().printago_director()->PostJobUpdateMessage();
+        }
+        
+    }
     BOOST_LOG_TRIVIAL(debug) << __FUNCTION__ << boost::format("exit.");
 }
 

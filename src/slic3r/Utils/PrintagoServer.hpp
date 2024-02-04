@@ -220,6 +220,8 @@ public:
     void OnSlicingCompleted(SlicingProcessCompletedEvent::StatusType slicing_result);
     void OnPrintJobSent(wxString printerId, bool success);
 
+    void PostJobUpdateMessage();
+
     void ResetMachineDialog()
     {
         delete m_select_machine_dlg;

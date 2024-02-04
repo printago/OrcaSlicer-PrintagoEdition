@@ -223,6 +223,19 @@ void PrintagoDirector::PostErrorMessage(const wxString printer_id, const wxStrin
     
 }
 
+void PrintagoDirector::PostJobUpdateMessage()
+{
+    json responseData;
+    auto* resp = new PrintagoResponse();
+    resp->SetMessageType("status");
+    resp->SetPrinterId(PBJob::printerId);
+    resp->SetCommand("job_update");
+    AddCurrentProcessJsonTo(responseData);
+    resp->SetData(responseData);
+
+    _PostResponse(*resp);
+}
+
 void PrintagoDirector::PostResponseMessage(const wxString printer_id, const json responseData, const wxString command)
 {
     auto* resp = new PrintagoResponse();
@@ -633,7 +646,8 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             }
 
             PBJob::serverState = JobServerState::Download;
-            PBJob::progress = 10;
+            PBJob::progress = 7;
+            PostJobUpdateMessage();
 
             // Second param is reference and modified inside SavePrintagoFile.
             if (SavePrintagoFile(printagoModelUrl, PBJob::localFile)) {
@@ -659,7 +673,8 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             PBJob::configFiles["print"]    = localPrintConf;
 
             PBJob::serverState = JobServerState::Configure;
-            PBJob::progress = 30;
+            PBJob::progress = 15;
+            PostJobUpdateMessage();
 
             wxGetApp().mainframe->select_tab(1);
             wxGetApp().plater()->reset();
@@ -690,7 +705,8 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             }
 
             PBJob::serverState = JobServerState::Slicing;
-            PBJob::progress    = 45;
+            PBJob::progress    = 25;
+            PostJobUpdateMessage();
 
             wxGetApp().plater()->select_plate(0, true);
             wxGetApp().plater()->reslice();
@@ -1264,7 +1280,9 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
     
     // Slicing Success -> Send to the Printer
     PBJob::serverState = JobServerState::Sending;
-    PBJob::progress    = 75;
+    PBJob::progress    = 90;
+    PostJobUpdateMessage();
+
     actionDetail   = wxString::Format("send_to_printer: %s", PBJob::localFile.GetFullName());
     
     m_select_machine_dlg->set_print_type(PrintFromType::FROM_NORMAL);
