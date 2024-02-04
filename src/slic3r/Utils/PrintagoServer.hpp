@@ -23,8 +23,9 @@ using tcp           = net::ip::tcp;
 namespace Slic3r {
 
 static constexpr short PRINTAGO_PORT = 33647;
-
 void printago_ws_error(beef::error_code ec, char const* what);
+
+class PrintagoDirector;
 
 //``````````````````````````````````````````````````
 //------------------PrintagoSession------------------
@@ -152,62 +153,6 @@ private:
 };
 
 //``````````````````````````````````````````````````
-//------------------PBJob (Printago Blocking Job)---
-//``````````````````````````````````````````````````
-enum class JobServerState { Idle, Download, Configure, Slicing, Sending };
-class PBJob
-{
-private:
-    static bool                  SetCanProcessJob(const bool can_process_job);
-    inline static bool           m_can_process_job = true;
-
-public:
-    inline static std::string serverStateStr()
-    {
-        switch (serverState) {
-        case JobServerState::Idle: return "idle";
-        case JobServerState::Download: return "download";
-        case JobServerState::Configure: return "configure";
-        case JobServerState::Slicing: return "slicing";
-        case JobServerState::Sending: return "sending";
-        }
-    }
-
-    inline static JobServerState                              serverState = JobServerState::Idle;
-    inline static wxString                                    jobId = "ptgo_default";
-    inline static wxString                                    printerId;
-    inline static wxString                                    command;
-    inline static wxFileName                                  localFile;
-    inline static std::unordered_map<std::string, wxFileName> configFiles;
-
-    inline static bool    use_ams             = false;
-    inline static bool    bbl_do_bed_leveling = false;
-    inline static bool    bbl_do_flow_cali    = false;
-    inline static BedType bed_type            = BedType::btDefault;
-
-    inline static int progress = 0;
-
-    inline static BedType StringToBedType(const std::string& bedType)
-    {
-        if (bedType == "cool_plate")
-            return BedType::btPC;
-        else if (bedType == "eng_plate")
-            return BedType::btEP;
-        else if (bedType == "warm_plate")
-            return BedType::btPEI;
-        else if (bedType == "textured_pei")
-            return BedType::btPTE;
-        else
-            return BedType::btDefault;
-    }
-
-    // Public getter for m_can_process_job
-    static bool CanProcessJob() { return m_can_process_job; }
-    static bool BlockJobProcessing() { return SetCanProcessJob(false); }
-    static bool UnblockJobProcessing() { return SetCanProcessJob(true); }
-};
-
-//``````````````````````````````````````````````````
 //------------------PrintagoDirector----------------
 //``````````````````````````````````````````````````
 class PrintagoDirector
@@ -273,6 +218,100 @@ private:
 
     bool SavePrintagoFile(const wxString url, wxFileName& localPath);
     bool DownloadFileFromURL(const wxString url, const wxFileName& localPath);
+};
+
+//``````````````````````````````````````````````````
+//------------------PBJob (Printago Blocking Job)---
+//``````````````````````````````````````````````````
+enum class JobServerState { Idle, Download, Configure, Slicing, Sending };
+
+class PBJob
+{
+private:
+    static bool SetCanProcessJob(const bool can_process_job)
+    {
+        if (can_process_job) {
+            printerId.Clear();
+            command.Clear();
+            localFile.Clear();
+            m_serverState = JobServerState::Idle;
+            configFiles.clear();
+            progress = 0;
+            jobId    = "ptgo_default";
+
+            use_ams             = false;
+            bbl_do_bed_leveling = false;
+            bbl_do_flow_cali    = false;
+
+            GUI::wxGetApp().printago_director()->ResetMachineDialog();
+        }
+
+        m_can_process_job = can_process_job;
+        return can_process_job;
+    }
+    inline static bool           m_can_process_job = true;
+    inline static JobServerState m_serverState     = JobServerState::Idle;
+
+public:
+    static std::string serverStateStr()
+    {
+        switch (m_serverState) {
+        case JobServerState::Idle: return "idle";
+        case JobServerState::Download: return "download";
+        case JobServerState::Configure: return "configure";
+        case JobServerState::Slicing: return "slicing";
+        case JobServerState::Sending: return "sending";
+        default: return "null";
+        }
+    }
+
+    const inline static std::map<JobServerState, int> serverStateProgress = {{JobServerState::Idle, 0},
+                                                                               {JobServerState::Download, 7},
+                                                                               {JobServerState::Configure, 15},
+                                                                               {JobServerState::Slicing, 25},
+                                                                               {JobServerState::Sending, 90}};
+
+    inline static wxString                                    jobId = "ptgo_default";
+    inline static wxString                                    printerId;
+    inline static wxString                                    command;
+    inline static wxFileName                                  localFile;
+    inline static std::unordered_map<std::string, wxFileName> configFiles;
+    inline static int                                         progress = 0;
+
+    inline static bool    use_ams             = false;
+    inline static bool    bbl_do_bed_leveling = false;
+    inline static bool    bbl_do_flow_cali    = false;
+    inline static BedType bed_type            = BedType::btDefault;
+
+    static BedType StringToBedType(const std::string& bedType)
+    {
+        if (bedType == "cool_plate")
+            return BedType::btPC;
+        else if (bedType == "eng_plate")
+            return BedType::btEP;
+        else if (bedType == "warm_plate")
+            return BedType::btPEI;
+        else if (bedType == "textured_pei")
+            return BedType::btPTE;
+        else
+            return BedType::btDefault;
+    }
+
+    static void SetServerState(JobServerState new_state, bool postMessage = false)
+    {
+        
+        if (new_state != m_serverState)
+            progress = serverStateProgress.at(new_state);
+        m_serverState = new_state;
+
+        if (postMessage)
+            GUI::wxGetApp().printago_director()->PostJobUpdateMessage();
+    }
+
+    static JobServerState GetServerState() { return m_serverState; }
+    static bool CanProcessJob() { return m_can_process_job; }
+    static bool BlockJobProcessing() { return SetCanProcessJob(false); }
+    static bool UnblockJobProcessing() { return SetCanProcessJob(true); }
 };
 
 } // namespace Slic3r

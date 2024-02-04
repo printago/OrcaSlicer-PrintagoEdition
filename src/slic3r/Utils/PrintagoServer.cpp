@@ -141,36 +141,6 @@ void PrintagoServer::handle_reconnect()
 }
 
 //``````````````````````````````````````````````````
-//------------------PrintagoGUIJob------------------
-//``````````````````````````````````````````````````
-bool PBJob::SetCanProcessJob(const bool can_process_job)
-{
-    if (can_process_job) {
-        printerId.Clear();
-        command.Clear();
-        localFile.Clear();
-        serverState = JobServerState::Idle;
-        configFiles.clear();
-        progress = 0;
-        jobId    = "ptgo_default";
-
-        use_ams = false;
-        bbl_do_bed_leveling = false;
-        bbl_do_flow_cali = false;
-
-        wxGetApp().printago_director()->ResetMachineDialog();
-
-        // wxGetApp().mainframe->m_tabpanel->Enable();
-        // wxGetApp().mainframe->m_topbar->Enable();
-    } else {
-        // wxGetApp().mainframe->m_tabpanel->Disable();
-        // wxGetApp().mainframe->m_topbar->Disable();
-    }
-    m_can_process_job = can_process_job;
-    return can_process_job;
-}
-
-//``````````````````````````````````````````````````
 //------------------PrintagoDirector------------------
 //``````````````````````````````````````````````````
 PrintagoDirector::PrintagoDirector()
@@ -645,9 +615,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 filamentConfUrl  = Http::url_decode(filamentConfUrl.ToStdString());
             }
 
-            PBJob::serverState = JobServerState::Download;
-            PBJob::progress = 7;
-            PostJobUpdateMessage();
+            PBJob::SetServerState(JobServerState::Download, true);
 
             // Second param is reference and modified inside SavePrintagoFile.
             if (SavePrintagoFile(printagoModelUrl, PBJob::localFile)) {
@@ -672,9 +640,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             PBJob::configFiles["filament"] = localFilamentConf;
             PBJob::configFiles["print"]    = localPrintConf;
 
-            PBJob::serverState = JobServerState::Configure;
-            PBJob::progress = 15;
-            PostJobUpdateMessage();
+            PBJob::SetServerState(JobServerState::Configure, true);
 
             wxGetApp().mainframe->select_tab(1);
             wxGetApp().plater()->reset();
@@ -704,10 +670,8 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 return false;
             }
 
-            PBJob::serverState = JobServerState::Slicing;
-            PBJob::progress    = 25;
-            PostJobUpdateMessage();
-
+            PBJob::SetServerState(JobServerState::Slicing, true);
+            
             wxGetApp().plater()->select_plate(0, true);
             wxGetApp().plater()->reslice();
             actionDetail = wxString::Format("slice_start: %s", PBJob::localFile.GetFullPath());
@@ -1279,9 +1243,7 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
     }
     
     // Slicing Success -> Send to the Printer
-    PBJob::serverState = JobServerState::Sending;
-    PBJob::progress    = 90;
-    PostJobUpdateMessage();
+    PBJob::SetServerState(JobServerState::Sending, true);
 
     actionDetail   = wxString::Format("send_to_printer: %s", PBJob::localFile.GetFullName());
     
@@ -1322,11 +1284,14 @@ void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
         return;
     }
 
-    // Hack so SendSuccessMessage is the last thing we do before unblocking.
+    PBJob::progress = 100;
+    PostJobUpdateMessage();
+
     const wxString pid(PBJob::printerId);
     const wxString cmd(PBJob::command);
 
     PBJob::UnblockJobProcessing();
+
     PostSuccessMessage(pid, "start_print_bbl", cmd, wxString::Format("print sent to: %s", printerId));
 }
 

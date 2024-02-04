@@ -165,6 +165,8 @@
 #include "PlateSettingsDialog.hpp"
 #include "DailyTips.hpp"
 #include "CreatePresetsDialog.hpp"
+
+//printago
 #include "PrintagoServer.hpp"
 
 using boost::optional;
@@ -6271,10 +6273,12 @@ void Plater::priv::on_slicing_update(SlicingStatusEvent &evt)
         }
     }
 
-    if (!PBJob::CanProcessJob()) {
-                
-        int start = 25;
-        int end = 90;
+    //printago
+    if (!PBJob::CanProcessJob()) 
+    {
+        int start  = PBJob::serverStateProgress.at(JobServerState::Slicing);
+        int end    = PBJob::serverStateProgress.at(JobServerState::Sending);
+
         int previousePercent = PBJob::progress;
 
         double overallProgress = start + (end - start) * (evt.status.percent / 100.0);
@@ -6615,6 +6619,7 @@ void Plater::priv::on_process_completed(SlicingProcessCompletedEvent &evt)
         }
     }
 
+    //printago
     if (!PBJob::CanProcessJob()) {
         SlicingProcessCompletedEvent::StatusType stat = evt.status();
         wxGetApp().printago_director()->OnSlicingCompleted(stat);

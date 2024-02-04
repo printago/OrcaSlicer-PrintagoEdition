@@ -8,6 +8,8 @@
 #include "slic3r/GUI/MainFrame.hpp"
 #include "slic3r/GUI/format.hpp"
 #include "bambu_networking.hpp"
+
+//printago
 #include "PrintagoServer.hpp"
 
 namespace Slic3r {
@@ -549,6 +551,7 @@ void PrintJob::process(Ctl &ctl)
             ctl.show_error_info(msg_text, 0, "", "");
         }
 
+        //printago
         if (!PBJob::CanProcessJob()) {
             wxGetApp().printago_director()->OnPrintJobSent(m_dev_id, false);
         }
@@ -573,6 +576,7 @@ void PrintJob::process(Ctl &ctl)
         }
         wxQueueEvent(m_plater, evt);
 
+        //printago
         if (!PBJob::CanProcessJob()) {
             wxGetApp().printago_director()->OnPrintJobSent(m_dev_id, true);
         }

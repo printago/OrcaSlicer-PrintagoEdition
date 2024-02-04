@@ -57,6 +57,8 @@ class ModelObject;
 class Model;
 class DeviceManager;
 class NetworkAgent;
+
+//printago
 class PrintagoDirector;
 
 namespace GUI{
