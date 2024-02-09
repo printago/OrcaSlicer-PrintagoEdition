@@ -15,7 +15,6 @@ using namespace Slic3r::GUI;
 
 namespace Slic3r {
 
-
 #define PRINTAGO_TEMP_THRESHOLD_ALLOW_E_CTRL 170.0f // Minimum temperature to allow extrusion control (per StatusPanel.cpp)
 
 void printago_ws_error(beefy::error_code ec, char const* what) { BOOST_LOG_TRIVIAL(error) << what << ": " << ec.message(); }
@@ -24,16 +23,11 @@ void printago_ws_error(beefy::error_code ec, char const* what) { BOOST_LOG_TRIVI
 //------------------PrintagoSession------------------
 //``````````````````````````````````````````````````
 PrintagoSession::PrintagoSession(tcp::socket&& socket) : ws_(std::move(socket)) {}
-
 void PrintagoSession::run() { on_run(); }
-
 void PrintagoSession::on_run()
 {
-    // Set suggested timeout settings for the websocket
-    // ... other setup ...
     ws_.async_accept([capture0 = shared_from_this()](auto&& PH1) { capture0->on_accept(std::forward<decltype(PH1)>(PH1)); });
 }
-
 void PrintagoSession::on_accept(beefy::error_code ec)
 {
     if (ec)
@@ -58,10 +52,10 @@ void PrintagoSession::on_read(beefy::error_code ec, std::size_t bytes_transferre
         const auto msg = beefy::buffers_to_string(buffer_.data());
 
         try {
-            auto json_msg = nlohmann::json::parse(msg);             
-            wxGetApp().printago_director()->ParseCommand(json_msg); 
+            auto json_msg = nlohmann::json::parse(msg);
+            wxGetApp().printago_director()->ParseCommand(json_msg);
         } catch (const nlohmann::json::parse_error& e) {
-            //snooze ya lose.  JSON or YOLO into the void.
+            // snooze ya lose.  JSON or YOLO into the void.
         }
 
         buffer_.consume(buffer_.size());
@@ -109,13 +103,18 @@ PrintagoServer::PrintagoServer(net::io_context& ioc, tcp::endpoint endpoint) : i
     acceptor_.bind(endpoint, ec);
     if (ec)
         printago_ws_error(ec, "bind");
-
+    
     acceptor_.listen(net::socket_base::max_listen_connections, ec);
     if (ec)
         printago_ws_error(ec, "listen");
 }
 
 void PrintagoServer::start() { do_accept(); }
+void PrintagoServer::stop()
+{
+
+    acceptor_.close();
+}
 
 void PrintagoServer::do_accept()
 {
@@ -131,10 +130,10 @@ void PrintagoServer::on_accept(beefy::error_code ec, tcp::socket socket)
         handle_reconnect();
     } else {
         reconnection_delay_ = 1; // Reset delay on successful connection
-        auto session = std::make_shared<PrintagoSession>(std::move(socket));
+        auto session        = std::make_shared<PrintagoSession>(std::move(socket));
         set_session(session);
         session->run();
-        do_accept(); 
+        do_accept();
     }
 }
 
@@ -157,7 +156,7 @@ PrintagoDirector::PrintagoDirector()
     auto endpoint = tcp::endpoint(net::ip::make_address("0.0.0.0"), PRINTAGO_PORT);
     server        = std::make_shared<PrintagoServer>(*_io_context, endpoint);
     server->start();
-    
+
     // Start the server on a separate thread
     server_thread = std::thread([this] { _io_context->run(); });
     server_thread.detach(); // Detach the thread
@@ -177,7 +176,10 @@ PrintagoDirector::~PrintagoDirector()
     delete m_select_machine_dlg;
 }
 
-void PrintagoDirector::PostErrorMessage(const wxString printer_id, const wxString localCommand, const json command, const wxString errorDetail)
+void PrintagoDirector::PostErrorMessage(const wxString printer_id,
+                                        const wxString localCommand,
+                                        const json     command,
+                                        const wxString errorDetail)
 {
     if (!PBJob::CanProcessJob()) {
         PBJob::UnblockJobProcessing();
@@ -195,12 +197,11 @@ void PrintagoDirector::PostErrorMessage(const wxString printer_id, const wxStrin
     resp->SetData(errorResponse);
 
     _PostResponse(*resp);
-    
 }
 
 void PrintagoDirector::PostJobUpdateMessage()
 {
-    json responseData;
+    json  responseData;
     auto* resp = new PrintagoResponse();
     resp->SetMessageType("status");
     resp->SetPrinterId(PBJob::printerId);
@@ -237,7 +238,7 @@ void PrintagoDirector::PostSuccessMessage(const wxString printer_id,
     resp->SetPrinterId(printer_id);
     resp->SetCommand(command);
     resp->SetData(responseData);
-
+    
     _PostResponse(*resp);
 }
 
@@ -322,7 +323,8 @@ bool PrintagoDirector::ValidatePrintagoCommand(const PrintagoCommand& cmd)
     wxString action      = cmd.GetAction();
 
     // Map of valid command types to their corresponding valid actions
-    std::map<std::string, std::set<std::string>> validCommands = {{"status", {"get_machine_list", "get_config", "switch_active"}},
+    std::map<std::string, std::set<std::string>> validCommands = {{"meta", {"init"}},
+                                                                  {"status", {"get_machine_list", "get_config", "switch_active"}},
                                                                   {"printer_control",
                                                                    {"pause_print", "resume_print", "stop_print", "get_status",
                                                                     "start_print_bbl"}},
@@ -355,9 +357,9 @@ json PrintagoDirector::GetAllStatus()
     return statusObject;
 }
 
-json PrintagoDirector::GetCompatOtherConfigsNames(Preset::Type preset_type, const Preset &printerPreset)
+json PrintagoDirector::GetCompatOtherConfigsNames(Preset::Type preset_type, const Preset& printerPreset)
 {
-    PresetCollection *collection = nullptr;
+    PresetCollection* collection = nullptr;
     std::string       configType;
 
     if (preset_type == Preset::TYPE_FILAMENT) {
@@ -400,41 +402,42 @@ json PrintagoDirector::GetCompatOtherConfigsNames(Preset::Type preset_type, cons
     return result;
 }
 
-bool PrintagoDirector::IsConfigCompatWithPrinter(const PresetWithVendorProfile &preset, const Preset &printerPreset)
+bool PrintagoDirector::IsConfigCompatWithPrinter(const PresetWithVendorProfile& preset, const Preset& printerPreset)
 {
     auto active_printer = wxGetApp().preset_bundle->printers.get_preset_with_vendor_profile(printerPreset);
 
     DynamicPrintConfig extra_config;
     extra_config.set_key_value("printer_preset", new ConfigOptionString(printerPreset.name));
-    const ConfigOption *opt = printerPreset.config.option("nozzle_diameter");
+    const ConfigOption* opt = printerPreset.config.option("nozzle_diameter");
     if (opt)
-        extra_config.set_key_value("num_extruders", new ConfigOptionInt((int) static_cast<const ConfigOptionFloats *>(opt)->values.size()));
+        extra_config.set_key_value("num_extruders", new ConfigOptionInt((int) static_cast<const ConfigOptionFloats*>(opt)->values.size()));
 
     if (preset.vendor != nullptr && preset.vendor != active_printer.vendor)
-		// The current profile has a vendor assigned and it is different from the active print's vendor.
-		return false;
-    auto &condition               = preset.preset.compatible_printers_condition();
-    auto *compatible_printers     = dynamic_cast<const ConfigOptionStrings*>(preset.preset.config.option("compatible_printers"));
-    bool  has_compatible_printers = compatible_printers != nullptr && ! compatible_printers->values.empty();
-    if (! has_compatible_printers && ! condition.empty()) {
+        // The current profile has a vendor assigned and it is different from the active print's vendor.
+        return false;
+    auto& condition               = preset.preset.compatible_printers_condition();
+    auto* compatible_printers     = dynamic_cast<const ConfigOptionStrings*>(preset.preset.config.option("compatible_printers"));
+    bool  has_compatible_printers = compatible_printers != nullptr && !compatible_printers->values.empty();
+    if (!has_compatible_printers && !condition.empty()) {
         try {
             return PlaceholderParser::evaluate_boolean_expression(condition, active_printer.preset.config, &extra_config);
-        } catch (const std::runtime_error &err) {
-            //FIXME in case of an error, return "compatible with everything".
+        } catch (const std::runtime_error& err) {
+            // FIXME in case of an error, return "compatible with everything".
             printf("Preset::is_compatible_with_printer - parsing error of compatible_printers_condition %s:\n%s\n",
-            active_printer.preset.name.c_str(), err.what()); return true;
+                   active_printer.preset.name.c_str(), err.what());
+            return true;
         }
     }
     return preset.preset.is_default || active_printer.preset.name.empty() || !has_compatible_printers ||
-        std::find(compatible_printers->values.begin(), compatible_printers->values.end(), active_printer.preset.name) !=
-        compatible_printers->values.end()
-        //BBS
+           std::find(compatible_printers->values.begin(), compatible_printers->values.end(), active_printer.preset.name) !=
+               compatible_printers->values.end()
+           // BBS
            || (!active_printer.preset.is_system && IsConfigCompatWithParent(preset, active_printer));
 }
 
-bool PrintagoDirector::IsConfigCompatWithParent(const PresetWithVendorProfile &preset, const PresetWithVendorProfile &active_printer)
+bool PrintagoDirector::IsConfigCompatWithParent(const PresetWithVendorProfile& preset, const PresetWithVendorProfile& active_printer)
 {
-    auto *compatible_printers     = dynamic_cast<const ConfigOptionStrings *>(preset.preset.config.option("compatible_printers"));
+    auto* compatible_printers     = dynamic_cast<const ConfigOptionStrings*>(preset.preset.config.option("compatible_printers"));
     bool  has_compatible_printers = compatible_printers != nullptr && !compatible_printers->values.empty();
     // BBS: FIXME only check the parent now, but should check grand-parent as well.
     return has_compatible_printers && std::find(compatible_printers->values.begin(), compatible_printers->values.end(),
@@ -443,10 +446,10 @@ bool PrintagoDirector::IsConfigCompatWithParent(const PresetWithVendorProfile &p
 
 bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
 {
-    wxString                commandType        = cmd.GetCommandType();
-    wxString                action             = cmd.GetAction();
-    wxStringToStringHashMap parameters         = cmd.GetParameters();
-    json                    originalCommand    = cmd.GetOriginalCommand();
+    wxString                commandType     = cmd.GetCommandType();
+    wxString                action          = cmd.GetAction();
+    wxStringToStringHashMap parameters      = cmd.GetParameters();
+    json                    originalCommand = cmd.GetOriginalCommand();
     wxString                actionDetail;
 
     MachineObject* printer = {nullptr};
@@ -557,17 +560,17 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             if (!printagoId.empty()) {
                 PBJob::jobId = printagoId;
             }
-            
+
             PBJob::printerId = printerId;
             PBJob::command   = originalCommand;
             PBJob::localFile = "";
 
-            PBJob::use_ams = printer->has_ams() && parameters.count("use_ams") && parameters["use_ams"].ToStdString() == "true";
+            PBJob::use_ams             = printer->has_ams() && parameters.count("use_ams") && parameters["use_ams"].ToStdString() == "true";
             PBJob::bbl_do_bed_leveling = parameters.count("do_bed_leveling") && parameters["do_bed_leveling"].ToStdString() == "true";
-            PBJob::bbl_do_flow_cali = parameters.count("do_flow_cali") && parameters["do_flow_cali"].ToStdString() == "true";
-            
+            PBJob::bbl_do_flow_cali    = parameters.count("do_flow_cali") && parameters["do_flow_cali"].ToStdString() == "true";
+
             if (parameters.count("bed_type")) {
-                PBJob::bed_type = PBJob::StringToBedType(parameters["bed_type"].ToStdString());   
+                PBJob::bed_type = PBJob::StringToBedType(parameters["bed_type"].ToStdString());
             } else {
                 PostErrorMessage(printerId, action, originalCommand, "missing bed_type (cool_plate, eng_plate, warm_plate, textured_pei)");
                 return false;
@@ -602,7 +605,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             if (SavePrintagoFile(printagoModelUrl, PBJob::localFile)) {
             } else {
                 PostErrorMessage(printerId, wxString::Format("%s:%s", action, PBJob::serverStateStr()), originalCommand,
-                                    "model download failed");
+                                 "model download failed");
                 return false;
             }
 
@@ -613,11 +616,11 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 SavePrintagoFile(printConfUrl, localPrintConf)) {
             } else {
                 PostErrorMessage(printerId, wxString::Format("%s:%s", action, PBJob::serverStateStr()), originalCommand,
-                                    "config download failed");
+                                 "config download failed");
                 return false;
             }
 
-            PBJob::configFiles["printer"] = localPrinterConf;
+            PBJob::configFiles["printer"]  = localPrinterConf;
             PBJob::configFiles["filament"] = localFilamentConf;
             PBJob::configFiles["print"]    = localPrintConf;
 
@@ -647,12 +650,12 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 }
             } catch (...) {
                 PostErrorMessage(PBJob::printerId, wxString::Format("%s:%s", "start_print_bbl", PBJob::serverStateStr()), PBJob::command,
-                                    "and error occurred loading the model and config");
+                                 "and error occurred loading the model and config");
                 return false;
             }
 
             PBJob::SetServerState(JobServerState::Slicing, true);
-            
+
             wxGetApp().plater()->select_plate(0, true);
             wxGetApp().plater()->reslice();
             actionDetail = wxString::Format("slice_start: %s", PBJob::localFile.GetFullPath());
@@ -797,7 +800,7 @@ void PrintagoDirector::SetPrintagoConfigs()
     std::string printerProfileName  = GetConfigNameFromJsonFile(PBJob::configFiles["printer"].GetFullPath());
     std::string filamentProfileName = GetConfigNameFromJsonFile(PBJob::configFiles["filament"].GetFullPath());
     std::string printProfileName    = GetConfigNameFromJsonFile(PBJob::configFiles["print"].GetFullPath());
-    
+
     wxGetApp().get_tab(Preset::TYPE_PRINTER)->select_preset(printerProfileName);
     wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(printProfileName);
 
@@ -835,16 +838,16 @@ std::string PrintagoDirector::GetConfigNameFromJsonFile(const wxString& FilePath
 void PrintagoDirector::AddCurrentProcessJsonTo(json& statusObject)
 {
     statusObject["process"]["can_process_job"] = PBJob::CanProcessJob();
-    statusObject["process"]["job_id"]         = PBJob::jobId.ToStdString();
-    statusObject["process"]["job_state"]      = PBJob::serverStateStr();
-    statusObject["process"]["job_machine"]    = PBJob::printerId.ToStdString();
-    statusObject["process"]["job_local_file"] = PBJob::localFile.GetFullPath().ToStdString();
-    statusObject["process"]["job_progress"]   = PBJob::progress;
+    statusObject["process"]["job_id"]          = PBJob::jobId.ToStdString();
+    statusObject["process"]["job_state"]       = PBJob::serverStateStr();
+    statusObject["process"]["job_machine"]     = PBJob::printerId.ToStdString();
+    statusObject["process"]["job_local_file"]  = PBJob::localFile.GetFullPath().ToStdString();
+    statusObject["process"]["job_progress"]    = PBJob::progress;
 
-    statusObject["process"]["bed_level"]      = PBJob::bbl_do_bed_leveling;
-    statusObject["process"]["flow_calibr"]    = PBJob::bbl_do_flow_cali;
-    statusObject["process"]["bed_type"]       = PBJob::bed_type;
-    statusObject["process"]["use_ams"]        = PBJob::use_ams;
+    statusObject["process"]["bed_level"]   = PBJob::bbl_do_bed_leveling;
+    statusObject["process"]["flow_calibr"] = PBJob::bbl_do_flow_cali;
+    statusObject["process"]["bed_type"]    = PBJob::bed_type;
+    statusObject["process"]["use_ams"]     = PBJob::use_ams;
 
     statusObject["software"]["is_dark_mode"] = wxGetApp().dark_mode();
 }
@@ -1033,11 +1036,11 @@ json PrintagoDirector::GetConfigByName(wxString configType, wxString configName)
     return result;
 }
 
-json PrintagoDirector::ConfigToJson(const DynamicPrintConfig &config,
-                              const std::string &name,
-                              const std::string &from,
-                              const std::string &version,
-                              const std::string  is_custom)
+json PrintagoDirector::ConfigToJson(const DynamicPrintConfig& config,
+                                    const std::string&        name,
+                                    const std::string&        from,
+                                    const std::string&        version,
+                                    const std::string         is_custom)
 {
     json j;
     // record the headers
@@ -1048,18 +1051,18 @@ json PrintagoDirector::ConfigToJson(const DynamicPrintConfig &config,
         j[BBL_JSON_KEY_IS_CUSTOM] = is_custom;
 
     // record all the key-values
-    for (const std::string &opt_key : config.keys()) {
-        const ConfigOption *opt = config.option(opt_key);
+    for (const std::string& opt_key : config.keys()) {
+        const ConfigOption* opt = config.option(opt_key);
         if (opt->is_scalar()) {
             if (opt->type() == coString && (opt_key != "bed_custom_texture" && opt_key != "bed_custom_model"))
                 // keep \n, \r, \t
-                j[opt_key] = (dynamic_cast<const ConfigOptionString *>(opt))->value;
+                j[opt_key] = (dynamic_cast<const ConfigOptionString*>(opt))->value;
             else
                 j[opt_key] = opt->serialize();
         } else {
-            const ConfigOptionVectorBase *vec = static_cast<const ConfigOptionVectorBase *>(opt);
-            std::vector<std::string> string_values = vec->vserialize();
-            json j_array(string_values);
+            const ConfigOptionVectorBase* vec           = static_cast<const ConfigOptionVectorBase*>(opt);
+            std::vector<std::string>      string_values = vec->vserialize();
+            json                          j_array(string_values);
             j[opt_key] = j_array;
         }
     }
@@ -1212,7 +1215,7 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
     }
     const wxString action = "start_print_bbl";
     wxString       actionDetail;
-    
+
     if (slicing_result != SlicingProcessCompletedEvent::StatusType::Finished) {
         actionDetail = "slicing Unknown Error: " + PBJob::localFile.GetFullPath();
         if (slicing_result == SlicingProcessCompletedEvent::StatusType::Cancelled)
@@ -1222,15 +1225,15 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
         PostErrorMessage(PBJob::printerId, action, PBJob::command, actionDetail);
         return;
     }
-    
+
     // Slicing Success -> Send to the Printer
     PBJob::SetServerState(JobServerState::Sending, true);
 
-    actionDetail   = wxString::Format("send_to_printer: %s", PBJob::localFile.GetFullName());
-    
+    actionDetail = wxString::Format("send_to_printer: %s", PBJob::localFile.GetFullName());
+
     m_select_machine_dlg->set_print_type(PrintFromType::FROM_NORMAL);
     m_select_machine_dlg->prepare(0);
-    
+
     m_select_machine_dlg->SetPrinter(PBJob::printerId.ToStdString());
     auto selectedPrinter = wxGetApp().getDeviceManager()->get_selected_machine();
     if (selectedPrinter->dev_id != PBJob::printerId.ToStdString() && !selectedPrinter->is_connected()) {
@@ -1246,7 +1249,6 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
     m_select_machine_dlg->SetCheckboxOption("bed_leveling", PBJob::bbl_do_bed_leveling);
     m_select_machine_dlg->SetCheckboxOption("flow_cali", PBJob::bbl_do_flow_cali);
 
-    
     wxGetApp().CallAfter([=] {
         wxCommandEvent btnEvt(wxGetApp().mainframe->GetId());
         m_select_machine_dlg->on_ok_btn(btnEvt);
@@ -1269,11 +1271,10 @@ void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
     PostJobUpdateMessage();
 
     json command = PBJob::command; // put here before we clear it in Unblock.
-      
-    PBJob::UnblockJobProcessing();  // unblock before notifying the client of the success.
+
+    PBJob::UnblockJobProcessing(); // unblock before notifying the client of the success.
 
     PostSuccessMessage(PBJob::printerId, "start_print_bbl", PBJob::command, wxString::Format("print sent to: %s", printerId));
 }
-
 
 } // namespace Slic3r
