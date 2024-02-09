@@ -110,11 +110,6 @@ PrintagoServer::PrintagoServer(net::io_context& ioc, tcp::endpoint endpoint) : i
 }
 
 void PrintagoServer::start() { do_accept(); }
-void PrintagoServer::stop()
-{
-
-    acceptor_.close();
-}
 
 void PrintagoServer::do_accept()
 {
@@ -285,30 +280,18 @@ bool PrintagoDirector::ParseCommand(const json& command)
 
     wxString commandType = command["command"].get<std::string>();
     wxString action      = command["action"].get<std::string>();
-
-    wxStringToStringHashMap parameters;
-
-    if (command.contains("parameters") && command["parameters"].is_object()) {
-        auto parametersJson = command["parameters"];
-
-        // Iterate over the parameters JSON object, if it exists
-        for (auto& [key, value] : parametersJson.items()) {
-            parameters[wxString(key)] = wxString(value.get<std::string>());
-        }
-    } else {
-        // Optionally log a warning or handle the absence of parameters as needed
-        wxLogWarning("JSON command does not contain parameters or parameters is not an object.");
-    }
+    json     parameters  = command["parameters"];  
 
     PrintagoCommand printagoCommand;
     printagoCommand.SetCommandType(commandType);
     printagoCommand.SetAction(action);
-    printagoCommand.SetParameters(parameters);
-    // Convert the entire command JSON object to string for logging or debugging
+    if (command.contains("parameters") && command["parameters"].is_object()) {
+        printagoCommand.SetParameters(parameters);    
+    }
+    
     printagoCommand.SetOriginalCommand(command);
 
     if (!ValidatePrintagoCommand(printagoCommand)) {
-        PostErrorMessage("", "", command.dump(), "Invalid printago command");
         return false;
     } else {
         wxGetApp().CallAfter([=]() { ProcessPrintagoCommand(printagoCommand); });
@@ -333,8 +316,15 @@ bool PrintagoDirector::ValidatePrintagoCommand(const PrintagoCommand& cmd)
 
     auto commandIter = validCommands.find(commandType.ToStdString());
     if (commandIter != validCommands.end() && commandIter->second.find(action.ToStdString()) != commandIter->second.end()) {
-        return true;
+        if (server->get_session()->get_authorized() || (commandType == "meta" && action == "init"))
+            return true;
+        else {
+            PostErrorMessage("", "", cmd.GetOriginalCommand(), "Unauthorized");
+            return false;
+        }
     }
+
+    PostErrorMessage("", "", cmd.GetOriginalCommand().dump(), "Invalid Printago command");
     return false;
 }
 
@@ -448,22 +438,44 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
 {
     wxString                commandType     = cmd.GetCommandType();
     wxString                action          = cmd.GetAction();
-    wxStringToStringHashMap parameters      = cmd.GetParameters();
+    json                    parameters      = cmd.GetParameters();
     json                    originalCommand = cmd.GetOriginalCommand();
     wxString                actionDetail;
 
     MachineObject* printer = {nullptr};
 
-    wxString printerId    = parameters.count("printer_id") ? parameters["printer_id"] : "Unspecified";
-    bool     hasPrinterId = printerId.compare("Unspecified");
+    std::string printerId = parameters.contains("printer_id") ? parameters["printer_id"].get<std::string>() : "Unspecified";
+    bool        hasPrinterId = printerId.compare("Unspecified");
+
+    if (!commandType.compare("meta")) {
+        if (!action.compare("init")) {
+            std::string token = parameters["token"];
+            if (token.empty()) {
+                PostErrorMessage("", "", cmd.GetOriginalCommand(), "Unauthorized: No Token");
+                return false;
+            }
+
+            if (ValidateToken(token)) {
+                server->get_session()->set_authorized(true);
+                actionDetail = "Authorized";
+            } else {
+                server->get_session()->set_authorized(false);
+                PostErrorMessage("", "", cmd.GetOriginalCommand(), "Unauthorized: Invalid Token");
+                return false;
+            }            
+        }
+
+        PostSuccessMessage(printerId, action, originalCommand, actionDetail);
+        return true;
+    }
 
     if (!commandType.compare("status")) {
         std::string username = wxGetApp().getAgent()->is_user_login() ? wxGetApp().getAgent()->get_user_name() : "nouser@bab";
         if (!action.compare("get_machine_list")) {
             PostResponseMessage(username, GetAllStatus(), originalCommand);
         } else if (!action.compare("get_config")) {
-            wxString config_type = parameters["config_type"];                                 // printer, filament, print
-            wxString config_name = Http::url_decode(parameters["config_name"].ToStdString()); // name of the config
+            std::string config_type = parameters["config_type"];                    // printer, filament, print
+            std::string config_name = Http::url_decode(parameters["config_name"]);  // name of the config
             json     configJson  = GetConfigByName(config_type, config_name);
             if (!configJson.empty()) {
                 PostResponseMessage(username, configJson, originalCommand);
@@ -551,10 +563,10 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 return false;
             }
 
-            wxString printagoModelUrl = parameters["model"];
-            wxString printerConfUrl   = parameters["printer_conf"];
-            wxString printConfUrl     = parameters["print_conf"];
-            wxString filamentConfUrl  = parameters["filament_conf"];
+            std::string printagoModelUrl = parameters["model"];
+            std::string printerConfUrl   = parameters["printer_conf"];
+            std::string printConfUrl     = parameters["print_conf"];
+            std::string filamentConfUrl  = parameters["filament_conf"];
 
             wxString printagoId = parameters["printago_job"];
             if (!printagoId.empty()) {
@@ -565,12 +577,12 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             PBJob::command   = originalCommand;
             PBJob::localFile = "";
 
-            PBJob::use_ams             = printer->has_ams() && parameters.count("use_ams") && parameters["use_ams"].ToStdString() == "true";
-            PBJob::bbl_do_bed_leveling = parameters.count("do_bed_leveling") && parameters["do_bed_leveling"].ToStdString() == "true";
-            PBJob::bbl_do_flow_cali    = parameters.count("do_flow_cali") && parameters["do_flow_cali"].ToStdString() == "true";
+            PBJob::use_ams             = printer->has_ams() && parameters.contains("use_ams") && parameters["use_ams"].get<bool>();
+            PBJob::bbl_do_bed_leveling = parameters.contains("do_bed_leveling") && parameters["do_bed_leveling"].get<bool>();
+            PBJob::bbl_do_flow_cali    = parameters.contains("do_flow_cali") && parameters["do_flow_cali"].get<bool>();
 
             if (parameters.count("bed_type")) {
-                PBJob::bed_type = PBJob::StringToBedType(parameters["bed_type"].ToStdString());
+                PBJob::bed_type = PBJob::StringToBedType(parameters["bed_type"]);
             } else {
                 PostErrorMessage(printerId, action, originalCommand, "missing bed_type (cool_plate, eng_plate, warm_plate, textured_pei)");
                 return false;
@@ -593,10 +605,10 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 PostErrorMessage(printerId, action, originalCommand, "must specify printer, filament, and print configurations");
                 return false;
             } else {
-                printagoModelUrl = Http::url_decode(printagoModelUrl.ToStdString());
-                printerConfUrl   = Http::url_decode(printerConfUrl.ToStdString());
-                printConfUrl     = Http::url_decode(printConfUrl.ToStdString());
-                filamentConfUrl  = Http::url_decode(filamentConfUrl.ToStdString());
+                printagoModelUrl = Http::url_decode(printagoModelUrl);
+                printerConfUrl   = Http::url_decode(printerConfUrl);
+                printConfUrl     = Http::url_decode(printConfUrl);
+                filamentConfUrl  = Http::url_decode(filamentConfUrl);
             }
 
             PBJob::SetServerState(JobServerState::Download, true);
@@ -665,12 +677,12 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             PostErrorMessage(printerId, action, originalCommand, "cannot control temperature; printer busy");
             return false;
         }
-        wxString tempStr = parameters["temperature"];
-        long     targetTemp;
-        if (!tempStr.ToLong(&targetTemp)) {
+
+        if (!parameters.contains("temperature") || !parameters["temperature"].is_number_integer()) {
             PostErrorMessage(printerId, action, originalCommand, "invalid temperature value");
             return false;
         }
+        int targetTemp = parameters["temperature"].get<int>();
 
         if (!action.compare("set_hotend")) {
             try {
@@ -699,47 +711,41 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             return false;
         }
         if (!action.compare("jog")) {
-            auto axes = ExtractPrefixedParams(parameters, "axes");
-            if (axes.empty()) {
+            if (!parameters.contains("axes") || !parameters["axes"].is_object()) {
                 PostErrorMessage(printerId, action, originalCommand, "no axes specified");
                 return false;
             }
+
+            auto axes = parameters["axes"];
 
             if (!printer->is_axis_at_home("X") || !printer->is_axis_at_home("Y") || !printer->is_axis_at_home("Z")) {
                 PostErrorMessage(printerId, action, originalCommand, "must home axes before moving");
                 return false;
             }
-            // Iterate through each axis and its value; we do this loop twice to ensure the input in clean.
-            // this ensures we do not move the head unless all input moves are valid.
-            for (const auto& axis : axes) {
-                wxString axisName = axis.first;
-                axisName.MakeUpper();
-                if (axisName != "X" && axisName != "Y" && axisName != "Z") {
-                    PostErrorMessage(printerId, action, originalCommand, "invalid axis name: " + axisName);
-                    return false;
-                }
-                wxString axisValueStr = axis.second;
-                double   axisValue;
-                if (!axisValueStr.ToDouble(&axisValue)) {
-                    PostErrorMessage(printerId, action, originalCommand, "invalid value for axis " + axisName);
-                    return false;
-                }
-            }
 
-            for (const auto& axis : axes) {
-                wxString axisName = axis.first;
-                axisName.MakeUpper();
-                wxString axisValueStr = axis.second;
-                double   axisValue;
-                axisValueStr.ToDouble(&axisValue);
+            // Validate axes and values
+            for (auto& [axisName, axisValue] : axes.items()) {
+                wxString axisNameUpper(axisName);
+                axisNameUpper.MakeUpper();
+
+                if (axisNameUpper != "X" && axisNameUpper != "Y" && axisNameUpper != "Z") {
+                    PostErrorMessage(printerId, action, originalCommand, "invalid axis name: " + axisNameUpper);
+                    return false;
+                }
+
+                if (!axisValue.is_number()) {
+                    PostErrorMessage(printerId, action, originalCommand, "invalid value for axis " + axisNameUpper);
+                    return false;
+                }
+                double value = axisValue.get<double>(); 
                 try {
-                    printer->command_axis_control(axisName.ToStdString(), 1.0, axisValue, 3000);
+                 
+                    printer->command_axis_control(axisNameUpper.ToStdString(), 1.0, value, 3000);
                 } catch (...) {
-                    PostErrorMessage(printerId, action, originalCommand, "an error occurred moving axis " + axisName);
+                    PostErrorMessage(printerId, action, originalCommand, "an error occurred moving axis " + axisNameUpper);
                     return false;
                 }
             }
-
         } else if (!action.compare("home")) {
             try {
                 printer->command_go_home();
@@ -749,12 +755,12 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             }
 
         } else if (!action.compare("extrude")) {
-            wxString amtStr = parameters["amount"];
-            long     extrudeAmt;
-            if (!amtStr.ToLong(&extrudeAmt)) {
+
+            if (!parameters.contains("amount") || !parameters["amount"].is_number_integer()) {
                 PostErrorMessage(printerId, action, originalCommand, "invalid extrude amount value");
                 return false;
             }
+            long extrudeAmt = parameters["amount"].get<long>();
 
             if (printer->nozzle_temp >= PRINTAGO_TEMP_THRESHOLD_ALLOW_E_CTRL) {
                 try {
@@ -809,18 +815,6 @@ void PrintagoDirector::SetPrintagoConfigs()
         wxGetApp().preset_bundle->set_filament_preset(i, filamentProfileName);
         wxGetApp().plater()->sidebar().combos_filament()[i]->update();
     }
-}
-
-std::map<wxString, wxString> PrintagoDirector::ExtractPrefixedParams(const wxStringToStringHashMap& params, const wxString& prefix)
-{
-    std::map<wxString, wxString> extractedParams;
-    for (const auto& kv : params) {
-        if (kv.first.StartsWith(prefix + ".")) {
-            wxString parmName         = kv.first.Mid(prefix.length() + 1); // +1 for the dot
-            extractedParams[parmName] = kv.second;
-        }
-    }
-    return extractedParams;
 }
 
 std::string PrintagoDirector::GetConfigNameFromJsonFile(const wxString& FilePath)
@@ -1275,6 +1269,30 @@ void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
     PBJob::UnblockJobProcessing(); // unblock before notifying the client of the success.
 
     PostSuccessMessage(PBJob::printerId, "start_print_bbl", PBJob::command, wxString::Format("print sent to: %s", printerId));
+}
+
+bool PrintagoDirector::ValidateToken(const std::string& token)
+{
+    std::string url     = "http://localhost:3000/api/slicer-tokens/" + token;
+    bool        isValid = false;
+
+    // Perform the HTTP GET request synchronously
+    Slic3r::Http::get(url)
+        .on_complete([&isValid](const std::string& body, unsigned /*status*/) {
+            // Parse the response body to check for success
+            try {
+                auto response = nlohmann::json::parse(body);
+                if (response.contains("success") && response["success"].get<bool>()) {
+                    isValid = true;
+                }
+            } catch (const nlohmann::json::exception& e) {
+                BOOST_LOG_TRIVIAL(error) << "JSON parsing error: " << e.what();
+                isValid = false;
+            }
+        })
+        .on_error([](const std::string& /*body*/, const std::string& /*error*/, unsigned /*status*/) { })
+        .perform_sync(); 
+    return isValid;
 }
 
 } // namespace Slic3r

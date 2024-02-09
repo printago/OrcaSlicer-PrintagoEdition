@@ -42,6 +42,9 @@ public:
     explicit PrintagoSession(tcp::socket&& socket);
     void run();
 
+    void set_authorized(bool status) { is_authorized = status; }
+    bool get_authorized() const { return is_authorized; }
+
 private:
     void on_run();
     void on_accept(beefy::error_code ec);
@@ -85,8 +88,8 @@ class PrintagoCommand
 public:
     PrintagoCommand() = default;
 
-    PrintagoCommand(const wxString& command_type, const wxString& action, wxStringToStringHashMap parameters, const json& originalCommand)
-        : m_command_type(command_type), m_action(action), m_parameters(std::move(parameters)), m_original_command(originalCommand)
+    PrintagoCommand(const wxString& command_type, const wxString& action, json& parameters, json originalCommand)
+        : m_command_type(command_type), m_action(action), m_parameters(std::move(parameters)), m_original_command(std::move(originalCommand))
     {}
 
     PrintagoCommand(const PrintagoCommand& other)
@@ -100,18 +103,18 @@ public:
 
     void SetCommandType(const wxString& command) { m_command_type = command; }
     void SetAction(const wxString& action) { m_action = action; }
-    void SetParameters(const wxStringToStringHashMap& parameters) { m_parameters = parameters; }
+    void SetParameters(const json& parameters) { m_parameters = parameters; }
     void SetOriginalCommand(const json& originalCommandStr) { m_original_command = originalCommandStr; }
 
-    wxString                GetCommandType() const { return m_command_type; }
-    wxString                GetAction() const { return m_action; }
-    wxStringToStringHashMap GetParameters() const { return m_parameters; }
-    json                    GetOriginalCommand() const { return m_original_command; }
+    wxString GetCommandType() const { return m_command_type; }
+    wxString GetAction() const { return m_action; }
+    json     GetParameters() const { return m_parameters; }
+    json     GetOriginalCommand() const { return m_original_command; }
 
 private:
     wxString                m_command_type;
     wxString                m_action;
-    wxStringToStringHashMap m_parameters;
+    json                    m_parameters;
     json                    m_original_command;
 };
 
@@ -190,7 +193,6 @@ private:
 
     bool                         ValidatePrintagoCommand(const PrintagoCommand& cmd);
     bool                         ProcessPrintagoCommand(const PrintagoCommand& command);
-    std::map<wxString, wxString> ExtractPrefixedParams(const wxStringToStringHashMap& params, const wxString& prefix);
 
     json GetAllStatus();
     void AddCurrentProcessJsonTo(json& statusObject);
@@ -223,6 +225,8 @@ private:
 
     bool SavePrintagoFile(const wxString url, wxFileName& localPath);
     bool DownloadFileFromURL(const wxString url, const wxFileName& localPath);
+
+    bool ValidateToken(const std::string& token);
 };
 
 //``````````````````````````````````````````````````
