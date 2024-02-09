@@ -305,7 +305,11 @@ bool PrintagoDirector::ValidatePrintagoCommand(const PrintagoCommand& cmd)
     wxString commandType = cmd.GetCommandType();
     wxString action      = cmd.GetAction();
 
-    // Map of valid command types to their corresponding valid actions
+    if (!server->get_session()->get_authorized() && !(commandType == "meta" && action == "init")) {
+        PostErrorMessage("", "", cmd.GetOriginalCommand(), "Unauthorized");
+        return false;
+    }
+
     std::map<std::string, std::set<std::string>> validCommands = {{"meta", {"init"}},
                                                                   {"status", {"get_machine_list", "get_config", "switch_active"}},
                                                                   {"printer_control",
@@ -316,15 +320,10 @@ bool PrintagoDirector::ValidatePrintagoCommand(const PrintagoCommand& cmd)
 
     auto commandIter = validCommands.find(commandType.ToStdString());
     if (commandIter != validCommands.end() && commandIter->second.find(action.ToStdString()) != commandIter->second.end()) {
-        if (server->get_session()->get_authorized() || (commandType == "meta" && action == "init"))
-            return true;
-        else {
-            PostErrorMessage("", "", cmd.GetOriginalCommand(), "Unauthorized");
-            return false;
-        }
+        return true; 
     }
 
-    PostErrorMessage("", "", cmd.GetOriginalCommand().dump(), "Invalid Printago command");
+    PostErrorMessage("", "", cmd.GetOriginalCommand(), "Invalid Printago command");
     return false;
 }
 
@@ -489,7 +488,11 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             }
             if (hasPrinterId) {
                 if (!SwitchSelectedPrinter(printerId)) {
-                    PostErrorMessage("", action, originalCommand, "unable, unknown");
+                    if (PBJob::CanProcessJob()) {
+                        PostErrorMessage("", action, originalCommand, "unable, printer_id not found.");
+                    } else {
+                        PostErrorMessage("", action, originalCommand, "unable, UI blocked");
+                    }
                 } else {
                     actionDetail = wxString::Format("connecting to %s", printerId);
                     PostSuccessMessage(printerId, action, originalCommand, actionDetail);
