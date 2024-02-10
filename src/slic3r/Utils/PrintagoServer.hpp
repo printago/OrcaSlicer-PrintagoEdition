@@ -52,7 +52,7 @@ private:
     void on_read(beefy::error_code ec, std::size_t bytes_transferred);
     void on_write(beefy::error_code ec, std::size_t bytes_transferred);
     void async_send(const std::string& message);
-    void do_write(const std::string& message);
+    void do_write(std::shared_ptr<std::string> messageBuffer);
 };
 
 //``````````````````````````````````````````````````

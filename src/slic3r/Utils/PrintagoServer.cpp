@@ -74,12 +74,13 @@ void PrintagoSession::on_write(beefy::error_code ec, std::size_t bytes_transferr
 
 void PrintagoSession::async_send(const std::string& message)
 {
-    net::post(ws_.get_executor(), [self = shared_from_this(), message]() { self->do_write(message); });
+    auto messageBuffer = std::make_shared<std::string>(message);
+    net::post(ws_.get_executor(), [self = shared_from_this(), messageBuffer]() { self->do_write(messageBuffer); });
 }
 
-void PrintagoSession::do_write(const std::string& message)
+void PrintagoSession::do_write(std::shared_ptr<std::string> messageBuffer)
 {
-    ws_.async_write(net::buffer(message), [self = shared_from_this()](beefy::error_code ec, std::size_t length) {
+    ws_.async_write(net::buffer(*messageBuffer), [self = shared_from_this(), messageBuffer](beefy::error_code ec, std::size_t length) {
         if (ec) {
             printago_ws_error(ec, "write");
         }
