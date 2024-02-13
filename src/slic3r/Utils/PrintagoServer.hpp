@@ -168,20 +168,28 @@ public:
 
     void PostJobUpdateMessage();
 
+    void ResetMachineDialog()
+    {
+        delete m_select_machine_dlg;
+        m_select_machine_dlg = nullptr;
+    }
+
 private:
     std::shared_ptr<net::io_context> _io_context;
     std::shared_ptr<PrintagoServer>  server;
     std::thread                      server_thread;
 
-    void PostStatusMessage(const wxString printer_id, const json statusData, const json command = {});
-    void PostResponseMessage(const wxString printer_id, const json responseData, const json command = {});
-    void PostSuccessMessage(const wxString printer_id,
-                            const wxString localCommand,
-                            const json     command            = {},
-                            const wxString localCommandDetail = "");
-    void PostErrorMessage(const wxString printer_id, const wxString localCommand, const json command = {}, const wxString errorDetail = "");
+    GUI::SelectMachineDialog* m_select_machine_dlg = nullptr;
 
-    void _PostResponse(const PrintagoResponse& response);
+    void PostStatusMessage(const wxString& printer_id, const json& statusData, const json& command = {});
+    void PostResponseMessage(const wxString& printer_id, const json& responseData, const json& command = {});
+    void PostSuccessMessage(const wxString& printer_id,
+                            const wxString& localCommand,
+                            const json&     command            = {},
+                            const wxString& localCommandDetail = "");
+    void PostErrorMessage(const wxString& printer_id, const wxString& localCommand, const json& command = {}, const wxString& errorDetail = "");
+
+    void _PostResponse(const PrintagoResponse& response) const;
 
     bool                         ValidatePrintagoCommand(const PrintagoCommand& cmd);
     bool                         ProcessPrintagoCommand(const PrintagoCommand& command);
@@ -243,6 +251,8 @@ private:
             use_ams             = false;
             bbl_do_bed_leveling = false;
             bbl_do_flow_cali    = false;
+
+            GUI::wxGetApp().printago_director()->ResetMachineDialog();
 
         }
 

@@ -167,12 +167,14 @@ PrintagoDirector::~PrintagoDirector()
     if (server_thread.joinable()) {
         server_thread.join();
     }
+
+    delete m_select_machine_dlg;
 }
 
-void PrintagoDirector::PostErrorMessage(const wxString printer_id,
-                                        const wxString localCommand,
-                                        const json     command,
-                                        const wxString errorDetail)
+void PrintagoDirector::PostErrorMessage(const wxString& printer_id,
+                                        const wxString& localCommand,
+                                        const json&     command,
+                                        const wxString& errorDetail)
 {
     if (!PBJob::CanProcessJob()) {
         PBJob::UnblockJobProcessing();
@@ -205,7 +207,7 @@ void PrintagoDirector::PostJobUpdateMessage()
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::PostResponseMessage(const wxString printer_id, const json responseData, const json command)
+void PrintagoDirector::PostResponseMessage(const wxString& printer_id, const json& responseData, const json& command)
 {
     auto resp = std::make_unique<PrintagoResponse>();
     resp->SetMessageType("status");
@@ -216,10 +218,10 @@ void PrintagoDirector::PostResponseMessage(const wxString printer_id, const json
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::PostSuccessMessage(const wxString printer_id,
-                                          const wxString localCommand,
-                                          const json     command,
-                                          const wxString localCommandDetail)
+void PrintagoDirector::PostSuccessMessage(const wxString& printer_id,
+                                          const wxString& localCommand,
+                                          const json&     command,
+                                          const wxString& localCommandDetail)
 {
     json responseData;
     responseData["local_command"]        = localCommand.ToStdString();
@@ -235,7 +237,7 @@ void PrintagoDirector::PostSuccessMessage(const wxString printer_id,
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::PostStatusMessage(const wxString printer_id, const json statusData, const json command)
+void PrintagoDirector::PostStatusMessage(const wxString& printer_id, const json& statusData, const json& command)
 {
     auto resp = std::make_unique<PrintagoResponse>();
     resp->SetMessageType("status");
@@ -246,7 +248,7 @@ void PrintagoDirector::PostStatusMessage(const wxString printer_id, const json s
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::_PostResponse(const PrintagoResponse& response)
+void PrintagoDirector::_PostResponse(const PrintagoResponse& response) const
 {
     wxDateTime now = wxDateTime::Now();
     now.MakeUTC();
@@ -1247,28 +1249,30 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
 
     actionDetail = wxString::Format("send_to_printer: %s", PBJob::localFile.GetFullName());
 
-    SelectMachineDialog selectMachineDialog(wxGetApp().plater());
-    selectMachineDialog.set_print_type(FROM_NORMAL);
-    selectMachineDialog.prepare(0);
+     if (!m_select_machine_dlg)
+        m_select_machine_dlg = new SelectMachineDialog(wxGetApp().plater());
+    
+    m_select_machine_dlg->set_print_type(FROM_NORMAL);
+     m_select_machine_dlg->prepare(0);
 
-    selectMachineDialog.SetPrinter(PBJob::printerId.ToStdString());
+    m_select_machine_dlg->SetPrinter(PBJob::printerId.ToStdString());
     auto selectedPrinter = wxGetApp().getDeviceManager()->get_selected_machine();
     if (selectedPrinter->dev_id != PBJob::printerId.ToStdString() && !selectedPrinter->is_connected()) {
         wxGetApp().getDeviceManager()->set_selected_machine(PBJob::printerId.ToStdString(), false);
     }
 
     if (selectedPrinter->has_ams()) {
-        selectMachineDialog.SetCheckboxOption("use_ams", PBJob::use_ams);
+        m_select_machine_dlg->SetCheckboxOption("use_ams", PBJob::use_ams);
     } else {
-        selectMachineDialog.SetCheckboxOption("use_ams", false);
+        m_select_machine_dlg->SetCheckboxOption("use_ams", false);
     }
-    selectMachineDialog.SetCheckboxOption("timelapse", false);
-    selectMachineDialog.SetCheckboxOption("bed_leveling", PBJob::bbl_do_bed_leveling);
-    selectMachineDialog.SetCheckboxOption("flow_cali", PBJob::bbl_do_flow_cali);
+    m_select_machine_dlg->SetCheckboxOption("timelapse", false);
+    m_select_machine_dlg->SetCheckboxOption("bed_leveling", PBJob::bbl_do_bed_leveling);
+    m_select_machine_dlg->SetCheckboxOption("flow_cali", PBJob::bbl_do_flow_cali);
 
-    wxGetApp().CallAfter([&] {
+    wxGetApp().CallAfter([=] {
         wxCommandEvent btnEvt(wxGetApp().mainframe->GetId());
-        selectMachineDialog.on_ok_btn(btnEvt);
+        m_select_machine_dlg->on_ok_btn(btnEvt);
     });
 }
 
