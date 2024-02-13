@@ -167,9 +167,6 @@ PrintagoDirector::~PrintagoDirector()
     if (server_thread.joinable()) {
         server_thread.join();
     }
-
-    // Clean up other resources
-    delete m_select_machine_dlg;
 }
 
 void PrintagoDirector::PostErrorMessage(const wxString printer_id,
@@ -304,7 +301,7 @@ bool PrintagoDirector::ParseCommand(json command)
     if (!ValidatePrintagoCommand(printagoCommand)) {
         return false;
     } else {
-        wxGetApp().CallAfter([=]() { ProcessPrintagoCommand(printagoCommand); });
+        ProcessPrintagoCommand(printagoCommand); 
     }
 
     return true;
@@ -439,7 +436,7 @@ bool PrintagoDirector::IsConfigCompatWithParent(const PresetWithVendorProfile& p
 {
     auto* compatible_printers     = dynamic_cast<const ConfigOptionStrings*>(preset.preset.config.option("compatible_printers"));
     bool  has_compatible_printers = compatible_printers != nullptr && !compatible_printers->values.empty();
-    // BBS: FIXME only check the parent now, but should check grand-parent as well.
+    // BBS_carryover: FIXME only check the parent now, but should check grand-parent as well.
     return has_compatible_printers && std::find(compatible_printers->values.begin(), compatible_printers->values.end(),
                                                 active_printer.preset.inherits()) != compatible_printers->values.end();
 }
@@ -480,7 +477,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
     }
 
     if (!commandType.compare("status")) {
-        std::string username = wxGetApp().getAgent()->is_user_login() ? wxGetApp().getAgent()->get_user_name() : "nouser@bab";
+        std::string username = wxGetApp().getAgent()->is_user_login() ? wxGetApp().getAgent()->get_user_name() : "nouser@bbl";
         if (!action.compare("get_machine_list")) {
             PostResponseMessage(username, GetAllStatus(), originalCommand);
         } else if (!action.compare("get_config")) {
@@ -532,6 +529,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
     }
 
     // select the printer for updates in the monitor for updates.
+    // this gets eventually queued in the UI thread.  Don't wait for it here if we dont need to.
     SwitchSelectedPrinter(printerId);
 
     if (!commandType.compare("printer_control")) {
@@ -602,9 +600,6 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 return false;
             }
 
-            if (!m_select_machine_dlg)
-                m_select_machine_dlg = new SelectMachineDialog(wxGetApp().plater());
-
             if (!PBJob::CanProcessJob()) {
                 PostErrorMessage(printerId, action, originalCommand, "busy with current job - check status");
                 return false;
@@ -652,38 +647,48 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
 
             PBJob::SetServerState(JobServerState::Configure, true);
 
-            wxGetApp().mainframe->select_tab(1);
-            wxGetApp().plater()->reset();
+            std::promise<bool> uiLoadFilesPromise;
+            std::future<bool>  uiLoadFilesFuture = uiLoadFilesPromise.get_future();
 
-            actionDetail = wxString::Format("slice_config: %s", PBJob::localFile.GetFullPath());
+            wxGetApp().CallAfter([&]() {
+                wxGetApp().mainframe->select_tab(1);
+                wxGetApp().plater()->reset();
 
-            // Loads the configs into the UI, if able; selects them in the dropdowns.
-            ImportPrintagoConfigs();
-            SetPrintagoConfigs();
-            wxGetApp().plater()->sidebar().on_bed_type_change(PBJob::bed_type);
+                actionDetail = wxString::Format("slice_config: %s", PBJob::localFile.GetFullPath());
 
-            try {
-                if (!PBJob::localFile.GetExt().MakeUpper().compare("3MF")) {
-                    // The last 'true' tells the function to not ask the user to confirm the load; save any existing work.
-                    wxGetApp().plater()->load_project(PBJob::localFile.GetFullPath(), "-", true);
-                    SetPrintagoConfigs(); // since the 3MF may have it's own configs that get set on load.
-                } else {
-                    std::vector<std::string> filePathArray;
-                    filePathArray.push_back(PBJob::localFile.GetFullPath().ToStdString());
-                    LoadStrategy strategy = LoadStrategy::LoadModel |
-                                            LoadStrategy::Silence; // LoadStrategy::LoadConfig | LoadStrategy::LoadAuxiliary
-                    wxGetApp().plater()->load_files(filePathArray, strategy, false);
+                ImportPrintagoConfigs();
+                SetPrintagoConfigs();
+                wxGetApp().plater()->sidebar().on_bed_type_change(PBJob::bed_type);
+
+                try {
+                    if (!PBJob::localFile.GetExt().MakeUpper().compare("3MF")) {
+                        // The last 'true' tells the function to not ask the user to confirm the load; save any existing work.
+                        wxGetApp().plater()->load_project(PBJob::localFile.GetFullPath(), "-", true);
+                        SetPrintagoConfigs(); // since the 3MF may have it's own configs that get set on load.
+                    } else {
+                        std::vector<std::string> filePathArray;
+                        filePathArray.push_back(PBJob::localFile.GetFullPath().ToStdString());
+                        LoadStrategy strategy = LoadStrategy::LoadModel |
+                                                LoadStrategy::Silence; // LoadStrategy::LoadConfig | LoadStrategy::LoadAuxiliary
+                        wxGetApp().plater()->load_files(filePathArray, strategy, false);
+                    }
+                    wxGetApp().plater()->select_plate(0, true);
+                    uiLoadFilesPromise.set_value(true);
+                } catch (...) {
+                    uiLoadFilesPromise.set_value(false);
                 }
-            } catch (...) {
+            });
+
+            bool uiLoadFilesSuccess = uiLoadFilesFuture.get();
+            if (uiLoadFilesSuccess) {
+                PBJob::SetServerState(JobServerState::Slicing, true);
+                wxGetApp().plater()->reslice();    
+            } else {
                 PostErrorMessage(PBJob::printerId, wxString::Format("%s:%s", "start_print_bbl", PBJob::serverStateStr()), PBJob::command,
                                  "and error occurred loading the model and config");
                 return false;
             }
-
-            PBJob::SetServerState(JobServerState::Slicing, true);
-
-            wxGetApp().plater()->select_plate(0, true);
-            wxGetApp().plater()->reslice();
+            
             actionDetail = wxString::Format("slice_start: %s", PBJob::localFile.GetFullPath());
         }
     } else if (!commandType.compare("temperature_control")) {
@@ -793,13 +798,14 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
         }
     }
 
-    // only send this response if it's *not* a start_print_bbl command.
+    // only send this response if it's *not* a start_print_bbl command. (it has it's own response)
     if (action.compare("start_print_bbl")) {
         PostSuccessMessage(printerId, action, originalCommand, actionDetail);
     }
     return true;
 }
 
+//needs UI thread.
 void PrintagoDirector::ImportPrintagoConfigs()
 {
     std::vector<std::string> cfiles;
@@ -815,6 +821,7 @@ void PrintagoDirector::ImportPrintagoConfigs()
     }
 }
 
+//needs UI thread.
 void PrintagoDirector::SetPrintagoConfigs()
 {
     std::string printerProfileName  = GetConfigNameFromJsonFile(PBJob::configFiles["printer"].GetFullPath());
@@ -1088,8 +1095,8 @@ bool PrintagoDirector::SwitchSelectedPrinter(const wxString& printerId)
     if (!machine)
         return false;
 
-    // set the selected printer in the monitor UI.
     try {
+        //this function queues the update on UI thread.
         wxGetApp().mainframe->m_monitor->select_machine(printerId.ToStdString());
     } catch (...) {
         return false;
@@ -1216,12 +1223,14 @@ bool PrintagoDirector::DownloadFileFromURL(const wxString url, const wxFileName&
 void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusType slicing_result)
 {
     // in case we got here by mistake and there's nothing we're trying to process; return silently.
-    if (PBJob::printerId.IsEmpty() || !m_select_machine_dlg || PBJob::CanProcessJob()) {
+    if (PBJob::printerId.IsEmpty() ||  PBJob::CanProcessJob()) {
         PBJob::UnblockJobProcessing();
         return;
     }
     const wxString action = "start_print_bbl";
     wxString       actionDetail;
+
+
 
     if (slicing_result != SlicingProcessCompletedEvent::StatusType::Finished) {
         actionDetail = "slicing Unknown Error: " + PBJob::localFile.GetFullPath();
@@ -1238,34 +1247,35 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
 
     actionDetail = wxString::Format("send_to_printer: %s", PBJob::localFile.GetFullName());
 
-    m_select_machine_dlg->set_print_type(PrintFromType::FROM_NORMAL);
-    m_select_machine_dlg->prepare(0);
+    SelectMachineDialog selectMachineDialog(wxGetApp().plater());
+    selectMachineDialog.set_print_type(FROM_NORMAL);
+    selectMachineDialog.prepare(0);
 
-    m_select_machine_dlg->SetPrinter(PBJob::printerId.ToStdString());
+    selectMachineDialog.SetPrinter(PBJob::printerId.ToStdString());
     auto selectedPrinter = wxGetApp().getDeviceManager()->get_selected_machine();
     if (selectedPrinter->dev_id != PBJob::printerId.ToStdString() && !selectedPrinter->is_connected()) {
         wxGetApp().getDeviceManager()->set_selected_machine(PBJob::printerId.ToStdString(), false);
     }
 
     if (selectedPrinter->has_ams()) {
-        m_select_machine_dlg->SetCheckboxOption("use_ams", PBJob::use_ams);
+        selectMachineDialog.SetCheckboxOption("use_ams", PBJob::use_ams);
     } else {
-        m_select_machine_dlg->SetCheckboxOption("use_ams", false);
+        selectMachineDialog.SetCheckboxOption("use_ams", false);
     }
-    m_select_machine_dlg->SetCheckboxOption("timelapse", false);
-    m_select_machine_dlg->SetCheckboxOption("bed_leveling", PBJob::bbl_do_bed_leveling);
-    m_select_machine_dlg->SetCheckboxOption("flow_cali", PBJob::bbl_do_flow_cali);
+    selectMachineDialog.SetCheckboxOption("timelapse", false);
+    selectMachineDialog.SetCheckboxOption("bed_leveling", PBJob::bbl_do_bed_leveling);
+    selectMachineDialog.SetCheckboxOption("flow_cali", PBJob::bbl_do_flow_cali);
 
-    wxGetApp().CallAfter([=] {
+    wxGetApp().CallAfter([&] {
         wxCommandEvent btnEvt(wxGetApp().mainframe->GetId());
-        m_select_machine_dlg->on_ok_btn(btnEvt);
+        selectMachineDialog.on_ok_btn(btnEvt);
     });
 }
 
 void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
 {
     // in case we got here by mistake and there's nothing we're trying to process; return silently.
-    if (PBJob::printerId.IsEmpty() || !m_select_machine_dlg || PBJob::CanProcessJob()) {
+    if (PBJob::printerId.IsEmpty() || PBJob::CanProcessJob()) {
         PBJob::UnblockJobProcessing();
         return;
     }

@@ -168,18 +168,10 @@ public:
 
     void PostJobUpdateMessage();
 
-    void ResetMachineDialog()
-    {
-        delete m_select_machine_dlg;
-        m_select_machine_dlg = nullptr;
-    }
-
 private:
     std::shared_ptr<net::io_context> _io_context;
     std::shared_ptr<PrintagoServer>  server;
     std::thread                      server_thread;
-
-    Slic3r::GUI::SelectMachineDialog* m_select_machine_dlg = nullptr;
 
     void PostStatusMessage(const wxString printer_id, const json statusData, const json command = {});
     void PostResponseMessage(const wxString printer_id, const json responseData, const json command = {});
@@ -252,7 +244,6 @@ private:
             bbl_do_bed_leveling = false;
             bbl_do_flow_cali    = false;
 
-            GUI::wxGetApp().printago_director()->ResetMachineDialog();
         }
 
         m_can_process_job = can_process_job;
