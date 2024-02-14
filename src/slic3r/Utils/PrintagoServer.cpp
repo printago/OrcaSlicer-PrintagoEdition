@@ -457,12 +457,15 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
     if (!commandType.compare("meta")) {
         if (!action.compare("init")) {
             std::string token = parameters["token"];
+            std::string url_base = parameters.find("url_base") != parameters.end() && !parameters["url_base"].empty() ?
+                                       Http::url_decode(parameters["url_base"]) :
+                                       "http://localhost:3000";
             if (token.empty()) {
                 PostErrorMessage("", "", cmd.GetOriginalCommand(), "Unauthorized: No Token");
                 return false;
             }
 
-            if (ValidateToken(token)) {
+            if (ValidateToken(token, url_base)) {
                 server->get_session()->set_authorized(true);
                 actionDetail = "Authorized";
             } else {
@@ -1296,9 +1299,10 @@ void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
     PostSuccessMessage(PBJob::printerId, "start_print_bbl", PBJob::command, wxString::Format("print sent to: %s", printerId));
 }
 
-bool PrintagoDirector::ValidateToken(const std::string& token)
+bool PrintagoDirector::ValidateToken(const std::string& token, const std::string& url_base)
 {
-    std::string url     = "http://localhost:3000/api/slicer-tokens/" + token;
+
+    std::string url     = url_base + "/api/slicer-tokens/" + token;
     bool        isValid = false;
 
     // Perform the HTTP GET request synchronously
