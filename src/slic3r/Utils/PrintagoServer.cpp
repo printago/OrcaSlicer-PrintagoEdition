@@ -1289,11 +1289,12 @@ void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
     PBJob::progress = 99;
     PostJobUpdateMessage();
 
-    json command = PBJob::command; // put here before we clear it in Unblock.
+    const json command_copy = PBJob::command; 
+    const wxString printerId_copy = PBJob::printerId;
 
     PBJob::UnblockJobProcessing(); // unblock before notifying the client of the success.
 
-    PostSuccessMessage(PBJob::printerId, "start_print_bbl", command, wxString::Format("print sent to: %s", printerId));
+    PostSuccessMessage(printerId_copy, "start_print_bbl", command_copy, wxString::Format("print sent to: %s", printerId_copy));
 }
 
 bool PrintagoDirector::ValidateToken(const std::string& token)
