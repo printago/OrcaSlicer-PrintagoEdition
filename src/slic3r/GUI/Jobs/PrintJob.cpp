@@ -553,10 +553,9 @@ void PrintJob::process(Ctl &ctl)
 
         //printago
         if (!PBJob::CanProcessJob()) {
-            wxGetApp().printago_director()->OnPrintJobSent(m_dev_id, true);
-            // wxGetApp().CallAfter([dev_id_copy = m_dev_id] {
-            //     wxGetApp().printago_director()->OnPrintJobSent(dev_id_copy, false);
-            // });
+            wxGetApp().CallAfter([dev_id_copy = m_dev_id] {
+                wxGetApp().printago_director()->OnPrintJobSent(dev_id_copy, false);
+            });
         }
 
         BOOST_LOG_TRIVIAL(error) << "print_job: failed, result = " << result;
@@ -581,10 +580,9 @@ void PrintJob::process(Ctl &ctl)
 
         //printago
         if (!PBJob::CanProcessJob()) {
-            wxGetApp().printago_director()->OnPrintJobSent(m_dev_id, true);
-            // wxGetApp().CallAfter([dev_id_copy = m_dev_id] {
-            //     wxGetApp().printago_director()->OnPrintJobSent(dev_id_copy, true);
-            // });
+            wxGetApp().CallAfter([dev_id_copy = m_dev_id] {
+                wxGetApp().printago_director()->OnPrintJobSent(dev_id_copy, true);
+            });
         }
 
         m_job_finished = true;
