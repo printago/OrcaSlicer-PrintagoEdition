@@ -20,6 +20,8 @@
 #include "Widgets/TextInput.hpp"
 #include "BBLStatusBar.hpp"
 #include "BBLStatusBarSend.hpp"
+#include "GUI_App.hpp"
+#include "PrintagoServer.hpp"
 
 class wxBoxSizer;
 class wxCheckBox;
@@ -70,6 +72,22 @@ struct MsgDialog : DPIDialog
 	virtual void on_dpi_changed(const wxRect& suggested_rect);
 	void SetButtonLabel(wxWindowID btn_id, const wxString& label, bool set_focus = false);
 
+    // Override Show
+    bool Show(bool show = true) override
+    {
+        if (show) {
+            SendPrintagoMessage();
+        }
+        return true;
+    }
+
+    // Override ShowModal
+    int ShowModal() override
+    {
+        SendPrintagoMessage();
+        return wxID_OK;
+    }
+
 protected:
 	enum {
 		BORDER = 20,
@@ -81,7 +99,7 @@ protected:
 		VERT_SPACING = 15,//TO
 	};
 
-	MsgDialog(wxWindow *parent, const wxString &title, const wxString &headline, long style = wxOK, wxBitmap bitmap = wxNullBitmap);
+	MsgDialog(wxWindow *parent, const wxString &title, const wxString &headline, long style = wxOK, wxBitmap bitmap = wxNullBitmap, const wxString& message = "");
 	// returns pointer to created button
 	Button* add_button(wxWindowID btn_id, bool set_focus = false, const wxString& label = wxString());
 	// returns pointer to found button or NULL
@@ -96,6 +114,15 @@ protected:
 	wxStaticBitmap *logo;
     MsgButtonsHash  m_buttons;
 	CheckBox* m_checkbox_dsa{nullptr};
+
+    // Printago - keep a reference to the message here; this is used to send the message over a web socket, not the message in the dialog.
+    // (The message in the dialog is not accessible from the outside of the parent class.)
+    wxString m_message; 
+
+    void SendPrintagoMessage()
+    {
+        wxGetApp().printago_director()->PostDialogMessage(this->GetTitle(), m_message);
+    }
 };
 
 
@@ -187,7 +214,8 @@ public:
 	RichMessageDialog &operator=(const RichMessageDialog&) = delete;
 	virtual ~RichMessageDialog() = default;
 
-	int  ShowModal() override;
+    //printago
+    // int  ShowModal() override;
 
 	void ShowCheckBox(const wxString& checkBoxText, bool checked = false)
 	{

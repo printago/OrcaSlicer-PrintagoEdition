@@ -247,6 +247,20 @@ void PrintagoDirector::PostStatusMessage(const wxString& printer_id, const json&
     _PostResponse(*resp);
 }
 
+void PrintagoDirector::PostDialogMessage(const wxString& dialogType, const wxString& dialogMessage)
+{
+    json responseData;
+    responseData["dialog_type"]    = dialogType.ToStdString();
+    responseData["dialog_message"] = dialogMessage.ToStdString();
+
+    auto resp = std::make_unique<PrintagoResponse>();
+    resp->SetMessageType("gui_message");
+    resp->SetPrinterId(PBJob::printerId);
+    resp->SetData(responseData);
+    //try 
+    _PostResponse(*resp);
+}
+
 void PrintagoDirector::_PostResponse(const PrintagoResponse& response) const
 {
     wxDateTime now = wxDateTime::Now();

@@ -165,6 +165,7 @@ public:
     void OnPrintJobSent(wxString printerId, bool success);
 
     void PostJobUpdateMessage();
+    void PostDialogMessage(const wxString& dialogType, const wxString& dialogMessage);
 
     void ResetMachineDialog()
     {
@@ -185,10 +186,7 @@ private:
 
     void PostStatusMessage(const wxString& printer_id, const json& statusData, const json& command = {});
     void PostResponseMessage(const wxString& printer_id, const json& responseData, const json& command = {});
-    void PostSuccessMessage(const wxString& printer_id,
-                            const wxString& localCommand,
-                            const json&     command            = {},
-                            const wxString& localCommandDetail = "");
+    void PostSuccessMessage(const wxString& printer_id, const wxString& localCommand, const json& command = {}, const wxString& localCommandDetail = "");
     void PostErrorMessage(const wxString& printer_id, const wxString& localCommand, const json& command = {}, const wxString& errorDetail = "", const bool shouldUnblock = false);
 
     void _PostResponse(const PrintagoResponse& response) const;

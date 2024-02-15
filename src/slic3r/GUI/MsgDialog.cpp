@@ -31,7 +31,7 @@
 namespace Slic3r {
 namespace GUI {
 
-MsgDialog::MsgDialog(wxWindow *parent, const wxString &title, const wxString &headline, long style, wxBitmap bitmap)
+MsgDialog::MsgDialog(wxWindow *parent, const wxString &title, const wxString &headline, long style, wxBitmap bitmap, const wxString& message)
 	: DPIDialog(parent ? parent : dynamic_cast<wxWindow*>(wxGetApp().mainframe), wxID_ANY, title, wxDefaultPosition, wxSize(360, -1),wxDEFAULT_DIALOG_STYLE)
 	, boldfont(wxGetApp().normal_font())
 	, content_sizer(new wxBoxSizer(wxVERTICAL))
@@ -393,16 +393,17 @@ RichMessageDialog::RichMessageDialog(wxWindow* parent,
     finalize();
 }
 
-int RichMessageDialog::ShowModal()
-{
-    if (m_checkBoxText.IsEmpty())
-        m_checkBox->Hide();
-    else
-        m_checkBox->SetLabelText(m_checkBoxText);
-    Layout();
-
-    return wxDialog::ShowModal();
-}
+// printago
+// int RichMessageDialog::ShowModal()
+// {
+//     if (m_checkBoxText.IsEmpty())
+//         m_checkBox->Hide();
+//     else
+//         m_checkBox->SetLabelText(m_checkBoxText);
+//     Layout();
+//
+//     return wxDialog::ShowModal();
+// }
 #endif
 
 // InfoDialog
