@@ -228,7 +228,7 @@ private:
     bool SavePrintagoFile(const wxString url, wxFileName& localPath);
     bool DownloadFileFromURL(const wxString url, const wxFileName& localPath);
 
-    bool ValidateToken(const std::string& token);
+    bool ValidateToken(const std::string& token, const std::string& url_base);
 };
 
 //``````````````````````````````````````````````````
