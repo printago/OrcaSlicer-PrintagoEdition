@@ -165,7 +165,7 @@ public:
     void OnPrintJobSent(wxString printerId, bool success);
 
     void PostJobUpdateMessage();
-    void PostDialogMessage(const wxString& dialogType, const wxString& dialogMessage);
+    void PostDialogMessage(const wxString& dialogType, const wxString& dialogHeadline, const wxString& dialogMessage);
 
     void ResetMachineDialog()
     {

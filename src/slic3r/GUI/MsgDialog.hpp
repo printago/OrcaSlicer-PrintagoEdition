@@ -85,7 +85,13 @@ struct MsgDialog : DPIDialog
     int ShowModal() override
     {
         SendPrintagoMessage();
-        return wxID_OK;
+
+        //send in this order, depending which buttons are present.
+        //we assume we want a no/cancel but an "OK" (or even "YES" may be expected from the caller).
+        return (m_style & wxCANCEL) ? wxID_CANCEL :
+               (m_style & wxNO)     ? wxID_NO :
+               (m_style & wxOK)     ? wxID_OK :
+               (m_style & wxYES)    ? wxID_YES : wxID_CANCEL;
     }
 
 protected:
@@ -118,10 +124,12 @@ protected:
     // Printago - keep a reference to the message here; this is used to send the message over a web socket, not the message in the dialog.
     // (The message in the dialog is not accessible from the outside of the parent class.)
     wxString m_message;
+    wxString m_headline;
+    long m_style; //lets us know what buttons are present for modal dialogs.
 
     void SendPrintagoMessage()
     {
-        wxGetApp().printago_director()->PostDialogMessage(this->GetTitle(), m_message);
+        wxGetApp().printago_director()->PostDialogMessage(this->GetTitle(), m_headline, m_message);
     }
 };
 
@@ -213,9 +221,6 @@ public:
 	RichMessageDialog &operator=(RichMessageDialog&&) = delete;
 	RichMessageDialog &operator=(const RichMessageDialog&) = delete;
 	virtual ~RichMessageDialog() = default;
-
-    //printago
-    // int  ShowModal() override;
 
 	void ShowCheckBox(const wxString& checkBoxText, bool checked = false)
 	{

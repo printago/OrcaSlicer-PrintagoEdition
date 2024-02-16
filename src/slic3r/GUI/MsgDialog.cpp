@@ -71,7 +71,8 @@ MsgDialog::MsgDialog(wxWindow *parent, const wxString &title, const wxString &he
     apply_style(style);
 	SetSizerAndFit(main_sizer);
     wxGetApp().UpdateDlgDarkUI(this);
-    m_message = headline; //set here, and if if there's a further message in the derived class, it will be appended to this
+    m_style    = style;
+    m_headline = headline; 
 }
 
  MsgDialog::~MsgDialog()
@@ -337,7 +338,7 @@ ErrorDialog::ErrorDialog(wxWindow *parent, const wxString &msg, bool monospaced_
                         wxString::Format(_(L("%s has encountered an error")), SLIC3R_APP_FULL_NAME), wxOK)
 	, msg(msg)
 {
-    m_message += ": " +  msg;
+    m_message = msg;
     add_msg_content(this, content_sizer, msg, monospaced_font);
 
 	// Use a small bitmap with monospaced font, as the error text will not be wrapped.
@@ -357,7 +358,7 @@ WarningDialog::WarningDialog(wxWindow *parent,
     : MsgDialog(parent, caption.IsEmpty() ? wxString::Format(_L("%s warning"), SLIC3R_APP_FULL_NAME) : caption, 
                         wxString::Format(_L("%s has a warning")+":", SLIC3R_APP_FULL_NAME), style)
 {
-    m_message += ": " +  message;
+    m_message = message;
     add_msg_content(this, content_sizer, message);
     finalize();
 }
@@ -371,7 +372,7 @@ MessageDialog::MessageDialog(wxWindow* parent,
     long style/* = wxOK*/)
     : MsgDialog(parent, caption.IsEmpty() ? wxString::Format(_L("%s info"), SLIC3R_APP_FULL_NAME) : caption, wxEmptyString, style)
 {
-    m_message += ": " +  message;
+    m_message = message;
     add_msg_content(this, content_sizer, message);
     finalize();
     wxGetApp().UpdateDlgDarkUI(this);
@@ -386,7 +387,7 @@ RichMessageDialog::RichMessageDialog(wxWindow* parent,
     long style/* = wxOK*/)
     : MsgDialog(parent, caption.IsEmpty() ? wxString::Format(_L("%s info"), SLIC3R_APP_FULL_NAME) : caption, wxEmptyString, style)
 {
-    m_message += ": " +  message;
+    m_message = message;
     add_msg_content(this, content_sizer, message);
 
     m_checkBox = new wxCheckBox(this, wxID_ANY, m_checkBoxText);
@@ -416,7 +417,7 @@ InfoDialog::InfoDialog(wxWindow* parent, const wxString &title, const wxString& 
     : MsgDialog(parent, wxString::Format(_L("%s information"), SLIC3R_APP_FULL_NAME), title, style)
 	, msg(msg)
 {
-    m_message += ": " +  msg;
+    m_message = msg;
     add_msg_content(this, content_sizer, msg, false, is_marked_msg);
     finalize();
 }
@@ -479,14 +480,14 @@ DownloadDialog::DownloadDialog(wxWindow *parent, const wxString &msg, const wxSt
 {
     add_button(wxID_YES, true, _L("Download"));
     add_button(wxID_CANCEL, true, _L("Skip"));
-    
+    m_message = msg;
     finalize();
 }
 
 
 void DownloadDialog::SetExtendedMessage(const wxString &extendedMessage) 
 {
-    m_message += ": " +  msg + ": " + extendedMessage;
+    m_message += ": " + extendedMessage;
     add_msg_content(this, content_sizer, msg + "\n" + extendedMessage, false, false);
     Layout();
     Fit();

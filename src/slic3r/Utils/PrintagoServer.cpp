@@ -247,10 +247,11 @@ void PrintagoDirector::PostStatusMessage(const wxString& printer_id, const json&
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::PostDialogMessage(const wxString& dialogType, const wxString& dialogMessage)
+void PrintagoDirector::PostDialogMessage(const wxString& dialogType, const wxString& dialogHeadline, const wxString& dialogMessage)
 {
     json responseData;
     responseData["dialog_type"]    = dialogType.ToStdString();
+    responseData["dialog_headline"] = dialogHeadline.ToStdString();
     responseData["dialog_message"] = dialogMessage.ToStdString();
 
     auto resp = std::make_unique<PrintagoResponse>();
