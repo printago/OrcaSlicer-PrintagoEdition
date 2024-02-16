@@ -650,9 +650,9 @@ SecondaryCheckDialog::SecondaryCheckDialog(wxWindow* parent, wxWindowID id, cons
         });
 
     if (btn_style == CONFIRM_AND_CANCEL) {
-        m_button_cancel->Show();
-        m_button_fn->Hide();
-        m_button_retry->Hide();
+        m_button_cancel->Show();  //cancel
+        m_button_fn->Hide();      //done
+        m_button_retry->Hide();   //retry
     } else if (btn_style == CONFIRM_AND_DONE) {
         m_button_cancel->Hide();
         m_button_fn->Show();
@@ -772,30 +772,30 @@ void SecondaryCheckDialog::update_title_style(wxString title, SecondaryCheckDial
 
     event_parent = parent;
 
-    if (style == CONFIRM_AND_CANCEL) {
+    if (style == CONFIRM_AND_CANCEL) {  //cancel this one.
         m_button_cancel->Show();
         m_button_fn->Hide();
         m_button_retry->Hide();
     }
-    else if (style == CONFIRM_AND_DONE) {
+    else if (style == CONFIRM_AND_DONE) {  //done this one.
         m_button_cancel->Hide();
         m_button_fn->Show();
         m_button_retry->Hide();
     }
-    else if (style == CONFIRM_AND_RETRY) {
-        m_button_retry->Show();
+    else if (style == CONFIRM_AND_RETRY) {  //confirm this one.
         m_button_cancel->Hide();
         m_button_fn->Hide();
-    }
-    else if (style == DONE_AND_RETRY) {
         m_button_retry->Show();
+    }
+    else if (style == DONE_AND_RETRY) {   //done this one.
+        m_button_cancel->Hide();
         m_button_fn->Show();
-        m_button_cancel->Hide();
+        m_button_retry->Show();
     }
-    else {
-        m_button_retry->Hide();
+    else {                                 //ok this one.
         m_button_cancel->Hide();
         m_button_fn->Hide();
+        m_button_retry->Hide();        
     }
 
 

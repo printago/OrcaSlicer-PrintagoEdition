@@ -99,7 +99,7 @@ protected:
 		VERT_SPACING = 15,//TO
 	};
 
-	MsgDialog(wxWindow *parent, const wxString &title, const wxString &headline, long style = wxOK, wxBitmap bitmap = wxNullBitmap, const wxString& message = "");
+	MsgDialog(wxWindow *parent, const wxString &title, const wxString &headline, long style = wxOK, wxBitmap bitmap = wxNullBitmap);
 	// returns pointer to created button
 	Button* add_button(wxWindowID btn_id, bool set_focus = false, const wxString& label = wxString());
 	// returns pointer to found button or NULL
@@ -117,7 +117,7 @@ protected:
 
     // Printago - keep a reference to the message here; this is used to send the message over a web socket, not the message in the dialog.
     // (The message in the dialog is not accessible from the outside of the parent class.)
-    wxString m_message; 
+    wxString m_message;
 
     void SendPrintagoMessage()
     {

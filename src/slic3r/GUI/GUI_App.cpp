@@ -2561,7 +2561,6 @@ bool GUI_App::on_init_inner()
             // }
             // });
 
-        //TODO: printago : comment out this event and return;
         Bind(EVT_ENTER_FORCE_UPGRADE, [this](const wxCommandEvent& evt) {
                 wxString      version_str = wxString::FromUTF8(this->app_config->get("upgrade", "version"));
                 wxString      description_text = wxString::FromUTF8(this->app_config->get("upgrade", "description"));
