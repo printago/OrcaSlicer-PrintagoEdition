@@ -6942,9 +6942,11 @@ void Plater::priv::update_plugin_when_launch(wxCommandEvent &event)
     auto cache_folder = data_dir_path / "ota";
     std::string changelog_file = cache_folder.string() + "/network_plugins.json";
 
-    UpdatePluginDialog dlg(wxGetApp().mainframe);
-    dlg.update_info(changelog_file);
-    auto result = dlg.ShowModal();
+    // UpdatePluginDialog dlg(wxGetApp().mainframe);
+    // dlg.update_info(changelog_file);
+    // auto result = dlg.ShowModal();
+    //printago
+    auto result = wxID_OK;
 
     auto app_config = wxGetApp().app_config;
     if (!app_config) return;

@@ -2992,12 +2992,17 @@ int MachineObject::parse_json(std::string payload)
                             else if (jj["errno"].get<int>() == -4) {
                                  text = _L("When you set the chamber temperature below 40\u2103, the chamber temperature control will not be activated. And the target chamber temperature will automatically be set to 0\u2103.");
                             }
-                            if(!text.empty()){
-#if __WXOSX__
-                            set_ctt_dlg(text);
-#else
-                            GUI::wxGetApp().show_dialog(text);
-#endif
+                            //printago -- this wasn't working in windows for me (only recieve these in mac).
+                            //along w/ the refactor to remove dialog pops, we always call set_ctt_dlg, which in turn will flip the message out to all connected clients.
+//                             if(!text.empty()){
+// #if __WXOSX__
+//                             set_ctt_dlg(text);
+// #else
+//                             GUI::wxGetApp().show_dialog(text);
+// #endif
+//                             }
+                            if (!text.empty()) {
+                                set_ctt_dlg(text);
                             }
                         }
                     }

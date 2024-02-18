@@ -110,6 +110,8 @@ class SecondaryCheckDialog : public DPIFrame
 {
 private:
     wxWindow* event_parent { nullptr };
+    wxString  m_message;
+
 public:
     enum ButtonStyle {
         ONLY_CONFIRM        = 0,
@@ -129,7 +131,7 @@ public:
         long            style = wxCLOSE_BOX | wxCAPTION,
         bool not_show_again_check = false
     );
-    void update_text(wxString text);
+    void update_text(wxString text) { m_message = text; };
     void on_show();
     void on_hide();
     void update_btn_label(wxString ok_btn_text, wxString cancel_btn_text);
