@@ -275,7 +275,7 @@ void PrintagoDirector::PostDialogMessage(const wxString& dialogType, const wxStr
     //public method; check authorization before dumping the message to the socket.
     if (server->get_session()->get_authorized()) {
         resp->SetData(responseData);
-        if (!dialogHeadline.compare("ConfirmBeforeSendDialog") || !dialogHeadline.compare("SecondaryCheckDialog")) {
+        if (!dialogHeadline.compare("ConfirmBeforeSendDialog") || !dialogHeadline.compare("SecondaryCheckDialog") || !dialogHeadline.compare("ShowIPAddress")) {
             wxGetApp().CallAfter([=] {
                 wxGetApp().printago_director()->PostErrorMessage("", "Orca Dialog Error", "", dialogMessage, true);
             });

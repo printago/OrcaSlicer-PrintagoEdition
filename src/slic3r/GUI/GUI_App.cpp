@@ -5326,9 +5326,13 @@ void GUI_App::update_internal_development() {
 
 void GUI_App::show_ip_address_enter_dialog(wxString title)
 {
-    auto evt = new wxCommandEvent(EVT_SHOW_IP_DIALOG);
-    evt->SetString(title);
-    wxQueueEvent(this, evt);
+    wxGetApp().CallAfter([ref = this] {
+        wxGetApp().printago_director()->PostDialogMessage("ShowIPAddress", "ShowIPAddress",
+                                                          "A print comms error occurred; Orca attempted to open an IP Dialog.");
+           });
+    // auto evt = new wxCommandEvent(EVT_SHOW_IP_DIALOG);
+    // evt->SetString(title);
+    // wxQueueEvent(this, evt);
 }
 
 bool GUI_App::show_modal_ip_address_enter_dialog(wxString title)
