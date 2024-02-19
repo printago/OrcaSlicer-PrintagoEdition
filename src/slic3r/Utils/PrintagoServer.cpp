@@ -201,7 +201,16 @@ void PrintagoDirector::PostJobUpdateMessage()
     resp->SetPrinterId(PBJob::printerId);
     resp->SetCommand("job_update");
     AddCurrentProcessJsonTo(responseData);
-    resp->SetData(responseData);
+
+    // public method; check authorization before dumping the message to the socket.
+    if (server->get_session()->get_authorized()) {
+        resp->SetData(responseData);
+    } else {
+        json noauth;
+        noauth["authorized"] = false;
+        noauth["error"]      = "Unauthorized";
+        resp->SetData(noauth);
+    }
 
     _PostResponse(*resp);
 }
@@ -243,6 +252,40 @@ void PrintagoDirector::PostStatusMessage(const wxString& printer_id, const json&
     resp->SetPrinterId(printer_id);
     resp->SetCommand(command);
     resp->SetData(statusData);
+
+    _PostResponse(*resp);
+}
+//if it's the special ones and we're blocking then send a PrintagoError, and unblock the UI.
+void PrintagoDirector::PostDialogMessage(const wxString& dialogType, const wxString& dialogHeadline, const wxString& dialogMessage)
+{
+    if (!server || !server->get_session()) {
+               return;
+    }
+
+    json responseData;
+    responseData["dialog_type"]    = dialogType.ToStdString();
+    responseData["dialog_headline"] = dialogHeadline.ToStdString();
+    responseData["dialog_message"] = dialogMessage.ToStdString();
+
+    auto resp = std::make_unique<PrintagoResponse>();
+    resp->SetMessageType("gui_message");
+    resp->SetPrinterId(PBJob::printerId);
+    resp->SetData(responseData);
+
+    //public method; check authorization before dumping the message to the socket.
+    if (server->get_session()->get_authorized()) {
+        resp->SetData(responseData);
+        if (!dialogHeadline.compare("ConfirmBeforeSendDialog") || !dialogHeadline.compare("SecondaryCheckDialog") || !dialogHeadline.compare("ShowIPAddress")) {
+            wxGetApp().CallAfter([=] {
+                wxGetApp().printago_director()->PostErrorMessage("", "Orca Dialog Error", "", dialogMessage, true);
+            });
+        }
+    } else {
+        json noauth;
+        noauth["authorized"] = false;
+        noauth["error"]      = "Unauthorized";
+        resp->SetData(noauth);
+    }
 
     _PostResponse(*resp);
 }

@@ -650,9 +650,9 @@ SecondaryCheckDialog::SecondaryCheckDialog(wxWindow* parent, wxWindowID id, cons
         });
 
     if (btn_style == CONFIRM_AND_CANCEL) {
-        m_button_cancel->Show();
-        m_button_fn->Hide();
-        m_button_retry->Hide();
+        m_button_cancel->Show();  //cancel
+        m_button_fn->Hide();      //done
+        m_button_retry->Hide();   //retry
     } else if (btn_style == CONFIRM_AND_DONE) {
         m_button_cancel->Hide();
         m_button_fn->Show();
@@ -687,7 +687,10 @@ SecondaryCheckDialog::SecondaryCheckDialog(wxWindow* parent, wxWindowID id, cons
     m_sizer_main->Add(m_sizer_right, 0, wxBOTTOM | wxEXPAND, FromDIP(5));
 
     Bind(wxEVT_CLOSE_WINDOW, [this](auto& e) {this->on_hide();});
-    Bind(wxEVT_ACTIVATE, [this](auto& e) { if (!e.GetActive()) this->RequestUserAttention(wxUSER_ATTENTION_ERROR); });
+    Bind(wxEVT_ACTIVATE, [this](auto& e) {
+        // if (!e.GetActive()) this->RequestUserAttention(wxUSER_ATTENTION_ERROR);
+         e.Skip();
+    });
 
     SetSizer(m_sizer_main);
     Layout();
@@ -707,49 +710,52 @@ void SecondaryCheckDialog::post_event(wxCommandEvent&& event)
     }
 }
 
-void SecondaryCheckDialog::update_text(wxString text)
-{
-    wxBoxSizer* sizer_text_release_note = new wxBoxSizer(wxVERTICAL);
-
-    if (!m_staticText_release_note) {
-        m_staticText_release_note = new Label(m_vebview_release_note, text, LB_AUTO_WRAP);
-        wxBoxSizer* top_blank_sizer = new wxBoxSizer(wxVERTICAL);
-        wxBoxSizer* bottom_blank_sizer = new wxBoxSizer(wxVERTICAL);
-        top_blank_sizer->Add(FromDIP(5), 0, wxALIGN_CENTER | wxALL, FromDIP(5));
-        bottom_blank_sizer->Add(FromDIP(5), 0, wxALIGN_CENTER | wxALL, FromDIP(5));
-
-        sizer_text_release_note->Add(top_blank_sizer, 0, wxALIGN_CENTER | wxALL, FromDIP(5));
-        sizer_text_release_note->Add(m_staticText_release_note, 0, wxALIGN_CENTER, FromDIP(5));
-        sizer_text_release_note->Add(bottom_blank_sizer, 0, wxALIGN_CENTER | wxALL, FromDIP(5));
-        m_vebview_release_note->SetSizer(sizer_text_release_note);
-    }
-    m_staticText_release_note->SetMaxSize(wxSize(FromDIP(330), -1));
-    m_staticText_release_note->SetMinSize(wxSize(FromDIP(330), -1));
-    m_staticText_release_note->SetLabelText(text);
-    m_vebview_release_note->Layout();
-
-    auto text_size = m_staticText_release_note->GetBestSize();
-    if (text_size.y < FromDIP(360))
-        m_vebview_release_note->SetMinSize(wxSize(FromDIP(360), text_size.y + FromDIP(25)));
-    else {
-        m_vebview_release_note->SetMinSize(wxSize(FromDIP(360), FromDIP(360)));
-    }
-
-    Layout();
-    Fit();
-}
+// void SecondaryCheckDialog::update_text(wxString text)
+// {
+//     wxBoxSizer* sizer_text_release_note = new wxBoxSizer(wxVERTICAL);
+//
+//     if (!m_staticText_release_note) {
+//         m_staticText_release_note = new Label(m_vebview_release_note, text, LB_AUTO_WRAP);
+//         wxBoxSizer* top_blank_sizer = new wxBoxSizer(wxVERTICAL);
+//         wxBoxSizer* bottom_blank_sizer = new wxBoxSizer(wxVERTICAL);
+//         top_blank_sizer->Add(FromDIP(5), 0, wxALIGN_CENTER | wxALL, FromDIP(5));
+//         bottom_blank_sizer->Add(FromDIP(5), 0, wxALIGN_CENTER | wxALL, FromDIP(5));
+//
+//         sizer_text_release_note->Add(top_blank_sizer, 0, wxALIGN_CENTER | wxALL, FromDIP(5));
+//         sizer_text_release_note->Add(m_staticText_release_note, 0, wxALIGN_CENTER, FromDIP(5));
+//         sizer_text_release_note->Add(bottom_blank_sizer, 0, wxALIGN_CENTER | wxALL, FromDIP(5));
+//         m_vebview_release_note->SetSizer(sizer_text_release_note);
+//     }
+//     m_staticText_release_note->SetMaxSize(wxSize(FromDIP(330), -1));
+//     m_staticText_release_note->SetMinSize(wxSize(FromDIP(330), -1));
+//     m_staticText_release_note->SetLabelText(text);
+//     m_vebview_release_note->Layout();
+//
+//     auto text_size = m_staticText_release_note->GetBestSize();
+//     if (text_size.y < FromDIP(360))
+//         m_vebview_release_note->SetMinSize(wxSize(FromDIP(360), text_size.y + FromDIP(25)));
+//     else {
+//         m_vebview_release_note->SetMinSize(wxSize(FromDIP(360), FromDIP(360)));
+//     }
+//
+//     Layout();
+//     Fit();
+// }
 
 void SecondaryCheckDialog::on_show()
 {
-    wxGetApp().UpdateFrameDarkUI(this);
-    // recover button color
-    wxMouseEvent evt_ok(wxEVT_LEFT_UP);
-    m_button_ok->GetEventHandler()->ProcessEvent(evt_ok);
-    wxMouseEvent evt_cancel(wxEVT_LEFT_UP);
-    m_button_cancel->GetEventHandler()->ProcessEvent(evt_cancel);
-
-    this->Show();
-    this->Raise();
+    //printago
+     wxGetApp().printago_director()->PostDialogMessage(this->GetTitle(), "SecondaryCheckDialog", m_message);
+    
+    // wxGetApp().UpdateFrameDarkUI(this);
+    // // recover button color
+    // wxMouseEvent evt_ok(wxEVT_LEFT_UP);
+    // m_button_ok->GetEventHandler()->ProcessEvent(evt_ok);
+    // wxMouseEvent evt_cancel(wxEVT_LEFT_UP);
+    // m_button_cancel->GetEventHandler()->ProcessEvent(evt_cancel);
+    //
+    // this->Show();
+    // this->Raise();
 }
 
 void SecondaryCheckDialog::on_hide()
@@ -772,30 +778,30 @@ void SecondaryCheckDialog::update_title_style(wxString title, SecondaryCheckDial
 
     event_parent = parent;
 
-    if (style == CONFIRM_AND_CANCEL) {
+    if (style == CONFIRM_AND_CANCEL) {  //cancel this one.
         m_button_cancel->Show();
         m_button_fn->Hide();
         m_button_retry->Hide();
     }
-    else if (style == CONFIRM_AND_DONE) {
+    else if (style == CONFIRM_AND_DONE) {  //done this one.
         m_button_cancel->Hide();
         m_button_fn->Show();
         m_button_retry->Hide();
     }
-    else if (style == CONFIRM_AND_RETRY) {
-        m_button_retry->Show();
+    else if (style == CONFIRM_AND_RETRY) {  //confirm this one.
         m_button_cancel->Hide();
         m_button_fn->Hide();
-    }
-    else if (style == DONE_AND_RETRY) {
         m_button_retry->Show();
+    }
+    else if (style == DONE_AND_RETRY) {   //done this one.
+        m_button_cancel->Hide();
         m_button_fn->Show();
-        m_button_cancel->Hide();
+        m_button_retry->Show();
     }
-    else {
-        m_button_retry->Hide();
+    else {                                 //ok this one.
         m_button_cancel->Hide();
         m_button_fn->Hide();
+        m_button_retry->Hide();        
     }
 
 
@@ -950,46 +956,49 @@ ConfirmBeforeSendDialog::ConfirmBeforeSendDialog(wxWindow* parent, wxWindowID id
     wxGetApp().UpdateDlgDarkUI(this);
 }
 
-void ConfirmBeforeSendDialog::update_text(wxString text)
-{
-    wxBoxSizer* sizer_text_release_note = new wxBoxSizer(wxVERTICAL);
-    if (!m_staticText_release_note){
-        m_staticText_release_note = new Label(m_vebview_release_note, text, LB_AUTO_WRAP);
-        wxBoxSizer* top_blank_sizer = new wxBoxSizer(wxVERTICAL);
-        wxBoxSizer* bottom_blank_sizer = new wxBoxSizer(wxVERTICAL);
-        top_blank_sizer->Add(FromDIP(5), 0, wxALIGN_CENTER | wxALL, FromDIP(5));
-        bottom_blank_sizer->Add(FromDIP(5), 0, wxALIGN_CENTER | wxALL, FromDIP(5));
-
-        sizer_text_release_note->Add(top_blank_sizer, 0, wxALIGN_CENTER | wxALL, FromDIP(5));
-        sizer_text_release_note->Add(m_staticText_release_note, 0, wxALIGN_CENTER, FromDIP(5));
-        sizer_text_release_note->Add(bottom_blank_sizer, 0, wxALIGN_CENTER | wxALL, FromDIP(5));
-        m_vebview_release_note->SetSizer(sizer_text_release_note);
-    }
-    m_staticText_release_note->SetMaxSize(wxSize(FromDIP(330), -1));
-    m_staticText_release_note->SetMinSize(wxSize(FromDIP(330), -1));
-    m_staticText_release_note->SetLabelText(text);
-    m_vebview_release_note->Layout();
-
-    auto text_size = m_staticText_release_note->GetBestSize();
-    if (text_size.y < FromDIP(360))
-        m_vebview_release_note->SetMinSize(wxSize(FromDIP(360), text_size.y + FromDIP(25)));
-    else {
-        m_vebview_release_note->SetMinSize(wxSize(FromDIP(360), FromDIP(360)));
-    }
-
-    Layout();
-    Fit();
-}
+// void ConfirmBeforeSendDialog::update_text(wxString text)
+// {
+//     wxBoxSizer* sizer_text_release_note = new wxBoxSizer(wxVERTICAL);
+//     if (!m_staticText_release_note){
+//         m_staticText_release_note = new Label(m_vebview_release_note, text, LB_AUTO_WRAP);
+//         wxBoxSizer* top_blank_sizer = new wxBoxSizer(wxVERTICAL);
+//         wxBoxSizer* bottom_blank_sizer = new wxBoxSizer(wxVERTICAL);
+//         top_blank_sizer->Add(FromDIP(5), 0, wxALIGN_CENTER | wxALL, FromDIP(5));
+//         bottom_blank_sizer->Add(FromDIP(5), 0, wxALIGN_CENTER | wxALL, FromDIP(5));
+//
+//         sizer_text_release_note->Add(top_blank_sizer, 0, wxALIGN_CENTER | wxALL, FromDIP(5));
+//         sizer_text_release_note->Add(m_staticText_release_note, 0, wxALIGN_CENTER, FromDIP(5));
+//         sizer_text_release_note->Add(bottom_blank_sizer, 0, wxALIGN_CENTER | wxALL, FromDIP(5));
+//         m_vebview_release_note->SetSizer(sizer_text_release_note);
+//     }
+//     m_staticText_release_note->SetMaxSize(wxSize(FromDIP(330), -1));
+//     m_staticText_release_note->SetMinSize(wxSize(FromDIP(330), -1));
+//     m_staticText_release_note->SetLabelText(text);
+//     m_vebview_release_note->Layout();
+//
+//     auto text_size = m_staticText_release_note->GetBestSize();
+//     if (text_size.y < FromDIP(360))
+//         m_vebview_release_note->SetMinSize(wxSize(FromDIP(360), text_size.y + FromDIP(25)));
+//     else {
+//         m_vebview_release_note->SetMinSize(wxSize(FromDIP(360), FromDIP(360)));
+//     }
+//
+//     Layout();
+//     Fit();
+// }
 
 void ConfirmBeforeSendDialog::on_show()
 {
-    wxGetApp().UpdateDlgDarkUI(this);
-    // recover button color
-    wxMouseEvent evt_ok(wxEVT_LEFT_UP);
-    m_button_ok->GetEventHandler()->ProcessEvent(evt_ok);
-    wxMouseEvent evt_cancel(wxEVT_LEFT_UP);
-    m_button_cancel->GetEventHandler()->ProcessEvent(evt_cancel);
-    this->ShowModal();
+    // printago
+    wxGetApp().printago_director()->PostDialogMessage(this->GetTitle(), "ConfirmBeforeSendDialog", m_message);
+
+    // wxGetApp().UpdateDlgDarkUI(this);
+    // // recover button color
+    // wxMouseEvent evt_ok(wxEVT_LEFT_UP);
+    // m_button_ok->GetEventHandler()->ProcessEvent(evt_ok);
+    // wxMouseEvent evt_cancel(wxEVT_LEFT_UP);
+    // m_button_cancel->GetEventHandler()->ProcessEvent(evt_cancel);
+    // this->ShowModal();
 }
 
 void ConfirmBeforeSendDialog::on_hide()
