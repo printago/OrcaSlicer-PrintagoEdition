@@ -4719,9 +4719,9 @@ void GUI_App::sync_preset(Preset* preset)
     }
 }
 
-void GUI_App::start_sync_user_preset(bool with_progress_dlg)
+void GUI_App::start_sync_user_preset(bool with_progress_dlg, bool from_printago)
 {
-    if (app_config->get("stealth_mode") == "true")
+    if (!from_printago && app_config->get("stealth_mode") == "true")
         return;
 
     if (!m_agent || !m_agent->is_user_login()) return;
@@ -4757,7 +4757,10 @@ void GUI_App::start_sync_user_preset(bool with_progress_dlg)
     else {
         finishFn = [this, userid = m_agent->get_user_id(), t = std::weak_ptr<int>(m_user_sync_token)](bool ok) {
             CallAfter([=] {
-                if (ok && m_agent && t.lock() == m_user_sync_token && userid == m_agent->get_user_id()) reload_settings();
+                if (ok && m_agent && t.lock() == m_user_sync_token && userid == m_agent->get_user_id()) {
+                    reload_settings();
+                    wxGetApp().printago_director()->RefreshUserCloudProfilesComplete();
+                }
             });
         };
     }
