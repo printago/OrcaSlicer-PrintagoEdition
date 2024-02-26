@@ -464,7 +464,7 @@ private:
     void            reload_settings();
     void            remove_user_presets();
     void            sync_preset(Preset* preset);
-    void            start_sync_user_preset(bool with_progress_dlg = false);
+    void            start_sync_user_preset(bool with_progress_dlg = false, bool from_printago = false);
     void            stop_sync_user_preset();
     void            start_http_server();
     void            stop_http_server();

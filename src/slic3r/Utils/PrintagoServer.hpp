@@ -174,6 +174,7 @@ public:
     }
 
     std::shared_ptr<PrintagoServer> GetServer() { return server; }
+    void                            RefreshUserCloudProfilesComplete();
 
 private:
     std::shared_ptr<net::io_context> _io_context;
@@ -198,6 +199,8 @@ private:
 
     bool ValidatePrintagoCommand(const PrintagoCommand& cmd);
     bool ProcessPrintagoCommand(const PrintagoCommand& command);
+    bool RefreshUserCloudProfilesStart();
+    
 
     json GetAllStatus();
     void AddCurrentProcessJsonTo(json& statusObject);

@@ -363,7 +363,7 @@ bool PrintagoDirector::ValidatePrintagoCommand(const PrintagoCommand& cmd)
     }
 
     std::map<std::string, std::set<std::string>> validCommands = {{"meta", {"init"}},
-                                                                  {"status", {"get_machine_list", "get_config", "switch_active"}},
+                                                                  {"status", {"get_machine_list", "get_config", "switch_active", "sync_profiles"}},
                                                                   {"printer_control",
                                                                    {"pause_print", "resume_print", "stop_print", "get_status",
                                                                     "start_print_bbl"}},
@@ -528,6 +528,19 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
         std::string username = wxGetApp().getAgent()->is_user_login() ? wxGetApp().getAgent()->get_user_name() : "nouser@bbl";
         if (!action.compare("get_machine_list")) {
             PostResponseMessage(username, GetAllStatus(), originalCommand);
+        } else if (!action.compare("sync_profiles")) {
+             try {
+                if (!RefreshUserCloudProfilesStart()) {
+                     PostErrorMessage(username, action, originalCommand, "an error occurred syncing profiles; network, network plugin, not logged in, or Stealth-mode");
+                     return false;
+                 } else {
+                     PostSuccessMessage(username, action, originalCommand, "syncing profiles: async start");
+                     return true;
+                 }
+             } catch (Exception e) {
+                 PostErrorMessage(username, action, originalCommand, "an error occurred syncing profiles: " + std::string(e.what()));
+                 return false;
+             }
         } else if (!action.compare("get_config")) {
             std::string config_type = parameters["config_type"];                    // printer, filament, print
             std::string config_name = Http::url_decode(parameters["config_name"]);  // name of the config
@@ -871,6 +884,40 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
         PostSuccessMessage(printerId, action, originalCommand, actionDetail);
     }
     return true;
+}
+
+// From: GUI_App::on_user_login_handle
+bool PrintagoDirector::RefreshUserCloudProfilesStart()
+{
+    if (!wxGetApp().getAgent() || !wxGetApp().getAgent()->is_user_login()) {
+        return false;
+    }
+
+    wxGetApp().getAgent()->connect_server();
+    DeviceManager* dev = wxGetApp().getDeviceManager();
+    if (!dev)
+        return false;
+
+    boost::thread update_thread = boost::thread([this, dev] {
+        dev->update_user_machine_list_info();
+    });
+
+    if (wxGetApp().getAgent()->is_user_login()) {
+        wxGetApp().remove_user_presets();
+        wxGetApp().enable_user_preset_folder(true);
+        wxGetApp().preset_bundle->load_user_presets(wxGetApp().getAgent()->get_user_id(), ForwardCompatibilitySubstitutionRule::Enable);
+        wxGetApp().mainframe->update_side_preset_ui();
+
+        wxGetApp().app_config->set_bool("sync_user_preset", true);
+        wxGetApp().start_sync_user_preset(false, true);
+        return true;
+    }
+    return false;
+}
+
+void PrintagoDirector::RefreshUserCloudProfilesComplete() {
+    std::string username = wxGetApp().getAgent()->is_user_login() ? wxGetApp().getAgent()->get_user_name() : "nouser@bbl";
+    PostSuccessMessage(username, "sync_profiles", "sync_profiles", "syncing profiles: complete");
 }
 
 void PrintagoDirector::OverridePrintSettings()
