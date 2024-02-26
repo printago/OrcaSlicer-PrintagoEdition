@@ -25,8 +25,6 @@ namespace Slic3r {
 static constexpr short PRINTAGO_PORT = 33647;
 void                   printago_ws_error(beefy::error_code ec, char const* what);
 
-class PrintagoDirector;
-
 //``````````````````````````````````````````````````
 //------------------PrintagoSession------------------
 //``````````````````````````````````````````````````
@@ -110,10 +108,10 @@ public:
     json     GetOriginalCommand() const { return m_original_command; }
 
 private:
-    wxString                m_command_type;
-    wxString                m_action;
-    json                    m_parameters;
-    json                    m_original_command;
+    wxString m_command_type;
+    wxString m_action;
+    json     m_parameters;
+    json     m_original_command;
 };
 
 //``````````````````````````````````````````````````
@@ -186,13 +184,20 @@ private:
 
     void PostStatusMessage(const wxString& printer_id, const json& statusData, const json& command = {});
     void PostResponseMessage(const wxString& printer_id, const json& responseData, const json& command = {});
-    void PostSuccessMessage(const wxString& printer_id, const wxString& localCommand, const json& command = {}, const wxString& localCommandDetail = "");
-    void PostErrorMessage(const wxString& printer_id, const wxString& localCommand, const json& command = {}, const wxString& errorDetail = "", const bool shouldUnblock = false);
+    void PostSuccessMessage(const wxString& printer_id,
+                            const wxString& localCommand,
+                            const json&     command            = {},
+                            const wxString& localCommandDetail = "");
+    void PostErrorMessage(const wxString& printer_id,
+                          const wxString& localCommand,
+                          const json&     command       = {},
+                          const wxString& errorDetail   = "",
+                          const bool      shouldUnblock = false);
 
     void _PostResponse(const PrintagoResponse& response) const;
 
-    bool                         ValidatePrintagoCommand(const PrintagoCommand& cmd);
-    bool                         ProcessPrintagoCommand(const PrintagoCommand& command);
+    bool ValidatePrintagoCommand(const PrintagoCommand& cmd);
+    bool ProcessPrintagoCommand(const PrintagoCommand& command);
 
     json GetAllStatus();
     void AddCurrentProcessJsonTo(json& statusObject);
@@ -218,6 +223,8 @@ private:
     std::string GetConfigNameFromJsonFile(const wxString& FilePath);
     json        GetConfigByName(wxString configType, wxString configName);
     json        GetCompatPrinterConfigNames(std::string printer_type);
+    void        OverridePrintSettings();
+    std::string FormatDoubleToString(double value, int precision = 2);
     void        ImportPrintagoConfigs();
     void        SetPrintagoConfigs();
 
@@ -253,7 +260,6 @@ private:
             bbl_do_flow_cali    = false;
 
             GUI::wxGetApp().printago_director()->ResetMachineDialog();
-
         }
 
         m_can_process_job = can_process_job;
@@ -261,6 +267,74 @@ private:
     }
     inline static bool           m_can_process_job = true;
     inline static JobServerState m_serverState     = JobServerState::Idle;
+
+    inline static std::vector<std::string> dont_override_these_print_settings{
+        "max_volumetric_extrusion_rate_slope",
+        "max_volumetric_extrusion_rate_slope_segment_length",
+        "inner_wall_speed",
+        "outer_wall_speed",
+        "sparse_infill_speed",
+        "internal_solid_infill_speed",
+        "top_surface_speed",
+        "support_speed",
+        "support_interface_speed",
+        "bridge_speed",
+        "internal_bridge_speed",
+        "gap_infill_speed",
+        "travel_speed",
+        "travel_speed_z",
+        "initial_layer_speed",
+        "outer_wall_acceleration",
+        "initial_layer_acceleration",
+        "top_surface_acceleration",
+        "default_acceleration",
+        "wall_filament",
+        "sparse_infill_filament",
+        "solid_infill_filament",
+        "support_filament",
+        "support_interface_filament",
+        "infill_wall_overlap",
+        "bridge_flow",
+        "internal_bridge_flow",
+        "elefant_foot_compensation",
+        "elefant_foot_compensation_layers",
+        "xy_contour_compensation",
+        "xy_hole_compensation",
+        "compatible_printers",
+        "compatible_printers_condition",
+        "inherits",
+        "enable_overhang_speed",
+        "slowdown_for_curled_perimeters",
+        "overhang_1_4_speed",
+        "overhang_2_4_speed",
+        "overhang_3_4_speed",
+        "overhang_4_4_speed",
+        "initial_layer_infill_speed",
+        "small_perimeter_speed",
+        "travel_acceleration",
+        "inner_wall_acceleration",
+        "default_jerk",
+        "outer_wall_jerk",
+        "inner_wall_jerk",
+        "infill_jerk",
+        "top_surface_jerk",
+        "initial_layer_jerk",
+        "travel_jerk",
+        "top_solid_infill_flow_ratio",
+        "bottom_solid_infill_flow_ratio",
+        "print_flow_ratio",
+        "role_based_wipe_speed",
+        "wipe_speed",
+        "accel_to_decel_enable",
+        "accel_to_decel_factor",
+        "bridge_acceleration",
+        "sparse_infill_acceleration",
+        "internal_solid_infill_acceleration",
+        "initial_layer_travel_speed",
+        "slow_down_layers",
+        "notes",
+        "wiping_volumes_extruders",
+    };
 
 public:
     static std::string serverStateStr()
@@ -317,10 +391,11 @@ public:
             GUI::wxGetApp().printago_director()->PostJobUpdateMessage();
     }
 
-    static JobServerState GetServerState() { return m_serverState; }
-    static bool           CanProcessJob() { return m_can_process_job; }
-    static bool           BlockJobProcessing() { return SetCanProcessJob(false); }
-    static bool           UnblockJobProcessing() { return SetCanProcessJob(true); }
+    static JobServerState           GetServerState() { return m_serverState; }
+    static bool                     CanProcessJob() { return m_can_process_job; }
+    static bool                     BlockJobProcessing() { return SetCanProcessJob(false); }
+    static bool                     UnblockJobProcessing() { return SetCanProcessJob(true); }
+    static std::vector<std::string> PrintSettingsNotToOverride() { return dont_override_these_print_settings; }
 };
 
 } // namespace Slic3r

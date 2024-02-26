@@ -623,10 +623,13 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 return false;
             }
 
-            std::string printagoModelUrl = parameters["model"];
-            std::string printerConfUrl   = parameters["printer_conf"];
-            std::string printConfUrl     = parameters["print_conf"];
-            std::string filamentConfUrl  = parameters["filament_conf"];
+            std::string printagoModelUrl     = parameters["model"];
+            std::string printerConfUrl       = parameters["printer_conf"];
+            std::string printConfUrl         = parameters["print_conf"];
+            std::string filamentConfUrl      = parameters["filament_conf"];
+            std::string overridePrintConfUrl = parameters.contains("print_override_conf") ?
+                                                   parameters["print_override_conf"]:
+                                                   "";
 
             wxString printagoId = parameters["printago_job"];
             if (!printagoId.empty()) {
@@ -668,6 +671,10 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 filamentConfUrl  = Http::url_decode(filamentConfUrl);
             }
 
+            if (!overridePrintConfUrl.empty()) {
+                overridePrintConfUrl = Http::url_decode(overridePrintConfUrl);
+            }
+
             PBJob::SetServerState(JobServerState::Download, true);
 
             // Second param is reference and modified inside SavePrintagoFile.
@@ -693,6 +700,16 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             PBJob::configFiles["filament"] = localFilamentConf;
             PBJob::configFiles["print"]    = localPrintConf;
 
+            if (!overridePrintConfUrl.empty()) {
+                wxFileName localOverridePrintConf;
+                if (!SavePrintagoFile(overridePrintConfUrl, localOverridePrintConf)) {
+                    PostErrorMessage(printerId, wxString::Format("%s:%s", action, PBJob::serverStateStr()), originalCommand,
+                                     "override config download failed", true);
+                    return false;
+                }
+                PBJob::configFiles["print_override"] = localOverridePrintConf;
+            }
+
             PBJob::SetServerState(JobServerState::Configure, true);
 
             std::promise<bool> uiLoadFilesPromise;
@@ -704,6 +721,9 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
 
                 actionDetail = wxString::Format("slice_config: %s", PBJob::localFile.GetFullPath());
 
+                if (!PBJob::configFiles["print_override"].GetFullPath().IsEmpty()) {
+                    OverridePrintSettings();
+                }
                 ImportPrintagoConfigs();
                 SetPrintagoConfigs();
                 wxGetApp().plater()->sidebar().on_bed_type_change(PBJob::bed_type);
@@ -717,7 +737,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                         std::vector<std::string> filePathArray;
                         filePathArray.push_back(PBJob::localFile.GetFullPath().ToStdString());
                         LoadStrategy strategy = LoadStrategy::LoadModel |
-                                                LoadStrategy::Silence; // LoadStrategy::LoadConfig | LoadStrategy::LoadAuxiliary
+                                                LoadStrategy::Silence; 
                         wxGetApp().plater()->load_files(filePathArray, strategy, false);
                     }
                     wxGetApp().plater()->select_plate(0, true);
@@ -852,6 +872,104 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
     }
     return true;
 }
+
+void PrintagoDirector::OverridePrintSettings()
+{
+    auto                     fullOptionsList = Preset::print_options();
+    std::vector<std::string> noOverrideKeys  = PBJob::PrintSettingsNotToOverride();
+    std::vector<std::string> layerHeightKeys = {"layer_height", "initial_layer_height", "independent_support_layer_height" };
+    std::vector<std::string> nameKeys = {"name", "print_settings_id" };
+
+
+    std::vector<std::string> optionsToUse;
+    std::copy_if(fullOptionsList.begin(), fullOptionsList.end(), std::back_inserter(optionsToUse),
+                 [&noOverrideKeys](const std::string& option) {
+                     return std::find(noOverrideKeys.begin(), noOverrideKeys.end(), option) == noOverrideKeys.end();
+                 });
+
+    wxFileName printSettingsPath    = PBJob::configFiles["print"].GetFullPath();
+    wxFileName overrideSettingsPath = PBJob::configFiles["print_override"].GetFullPath();
+    wxFileName printerSettingsPath  = PBJob::configFiles["printer"].GetFullPath();
+    wxString   newProfileName       = printSettingsPath.GetName().ToStdString() + "-printago-" + PBJob::jobId.Right(6);
+
+    // Load JSON data from files
+    std::ifstream printSettingsFile(printSettingsPath.GetFullPath());
+    json          printSettings;
+    printSettingsFile >> printSettings;
+
+    std::ifstream printerSettingsFile(printerSettingsPath.GetFullPath());
+    json          printerSettings;
+    printerSettingsFile >> printerSettings;
+
+    double nozzle_diameter  = 0.0;
+    double min_layer_height = 0.0;
+    double max_layer_height = 0.0;
+
+    if (printerSettings.contains("nozzle_diameter") && !printerSettings["nozzle_diameter"].empty()) {
+        nozzle_diameter = std::stod(printerSettings["nozzle_diameter"][0].get<std::string>());
+    }
+
+    if (printerSettings.contains("min_layer_height") && !printerSettings["min_layer_height"].empty()) {
+        min_layer_height = std::stod(printerSettings["min_layer_height"][0].get<std::string>());
+    }
+
+    if (printerSettings.contains("max_layer_height") && !printerSettings["max_layer_height"].empty()) {
+        max_layer_height = std::stod(printerSettings["max_layer_height"][0].get<std::string>());
+    }
+
+    if (max_layer_height == 0.0) {
+        max_layer_height = nozzle_diameter * 0.75; // Apply the default calculation if max_layer_height is not set
+    }
+
+    std::ifstream overrideSettingsFile(overrideSettingsPath.GetFullPath());
+    json          overrideSettings;
+    overrideSettingsFile >> overrideSettings;
+
+    // Iterate over the override settings
+    for (auto& el : overrideSettings.items()) {
+        std::string key = el.key();
+        if (std::find(optionsToUse.begin(), optionsToUse.end(), key) != optionsToUse.end()) {
+            if (printSettings.find(key) != printSettings.end()) {
+                // Check if the key is one of the layer height keys
+                if (std::find(layerHeightKeys.begin(), layerHeightKeys.end(), key) != layerHeightKeys.end()) {
+                    std::string overrideValueStr = overrideSettings[key].get<std::string>();
+                    double      overrideValue    = std::stod(overrideValueStr);
+                
+                    // Clamp the override value to be within the min and max layer height
+                    if (overrideValue < min_layer_height) {
+                        overrideValue = min_layer_height;
+                    } else if (overrideValue > max_layer_height) {
+                        overrideValue = max_layer_height;
+                    }
+                    // Set the clamped value
+                    printSettings[key] = FormatDoubleToString(overrideValue);
+                } else {
+                    // For keys not related to layer height, simply override the value
+                    printSettings[key] = overrideSettings[key];
+                }
+            }
+        }
+    }
+
+    printSettings["name"] = newProfileName.ToStdString();
+    printSettings["print_settings_id"] = newProfileName.ToStdString();
+
+    wxFileName newPrintSettingsPath(printSettingsPath);
+    newPrintSettingsPath.SetName(newProfileName);
+    wxString z = newPrintSettingsPath.GetFullPath();
+    std::ofstream outFile(newPrintSettingsPath.GetFullPath());
+    outFile << printSettings.dump(2);
+
+    PBJob::configFiles["print"] = newPrintSettingsPath;
+}
+
+std::string PrintagoDirector::FormatDoubleToString(double value, int precision)
+{
+    std::ostringstream out;
+    out << std::fixed << std::setprecision(precision) << value;
+    return out.str();
+}
+
 
 //needs UI thread.
 void PrintagoDirector::ImportPrintagoConfigs()
@@ -1338,6 +1456,12 @@ void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
     const json command_copy = PBJob::command; 
     const wxString printerId_copy = PBJob::printerId;
 
+    if(!PBJob::configFiles["print_override"].GetFullPath().IsEmpty()) {
+        //when we overrode the print settings, we replaced the ["print"] file with a new one.
+        //this should already be selected in the UI, but we need to re-select it here to ensure we delete the right one.
+        wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(PBJob::configFiles["print"].GetName().ToStdString());
+        wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(PBJob::configFiles["print"].GetName().ToStdString(), true);
+    }
     PBJob::UnblockJobProcessing(); // unblock before notifying the client of the success.
 
     PostSuccessMessage(printerId_copy, "start_print_bbl", command_copy, wxString::Format("print sent to: %s", printerId_copy));
