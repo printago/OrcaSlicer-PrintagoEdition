@@ -1,8 +1,8 @@
-[![Build all](https://github.com/SoftFever/OrcaSlicer/actions/workflows/build_all.yml/badge.svg?branch=main)](https://github.com/SoftFever/OrcaSlicer/actions/workflows/build_all.yml)
+[![Build all](https://github.com/printago/OrcaSlicer-PrintagoEdition/actions/workflows/build_all.yml/badge.svg?branch=main)](https://github.com/printago/OrcaSlicer-PrintagoEdition/actions/workflows/build_all.yml)
 # Orca Slicer - Printago Edition
 Orca Slicer is an open source slicer for FDM printers.   
 
-![discord-mark-blue](https://github.com/SoftFever/OrcaSlicer/assets/103989404/b97d5ffc-072d-4d0a-bbda-e67ef373876f) Join community: [OrcaSlicer Official Discord Server](https://discord.gg/P4VE9UY9gJ)   
+![discord-mark-blue](https://github.com/printago/OrcaSlicer-PrintagoEdition/assets/103989404/b97d5ffc-072d-4d0a-bbda-e67ef373876f) Join community: [Printago Official Discord Server](https://discord.gg/RCFA2u99De)   
 
 # Main features
 - Auto calibrations for all printers
@@ -17,11 +17,11 @@ Orca Slicer is an open source slicer for FDM printers.
 # Download
 
 ### Stable Release
-📥 **[Download the Latest Stable Release](https://github.com/SoftFever/OrcaSlicer/releases/latest)**  
+📥 **[Download the Latest Stable Release](https://github.com/printago/OrcaSlicer-PrintagoEdition/releases/latest)**  
 Visit our GitHub Releases page for the latest stable version of Orca Slicer, recommended for most users.
 
 ### Nightly Builds
-🌙 **[Download the Latest Nightly Build](https://github.com/SoftFever/OrcaSlicer/releases/tag/nightly-builds)**  
+🌙 **[Download the Latest Nightly Build](https://github.com/printago/OrcaSlicer-PrintagoEdition/releases/tag/nightly-builds)**  
 Explore the latest developments in Orca Slicer with our nightly builds. Feedback on these versions is highly appreciated.
 
 
@@ -30,10 +30,10 @@ Explore the latest developments in Orca Slicer with our nightly builds. Feedback
 1.  Download the installer for your preferred version from the [releases page](https://github.com/SoftFever/OrcaSlicer/releases).
     - *For convenience there is also a portable build available.*
     - *If you have troubles to run the build, you might need to install following runtimes:*
-      - [MicrosoftEdgeWebView2RuntimeInstallerX64](https://github.com/SoftFever/OrcaSlicer/releases/download/v1.0.10-sf2/MicrosoftEdgeWebView2RuntimeInstallerX64.exe)
+      - [MicrosoftEdgeWebView2RuntimeInstallerX64](https://github.com/printago/OrcaSlicer-PrintagoEdition/releases/download/v1.0.10-sf2/MicrosoftEdgeWebView2RuntimeInstallerX64.exe)
           - [Details of this runtime](https://aka.ms/webview2)
           - [Alternative Download Link Hosted by Microsoft](https://go.microsoft.com/fwlink/p/?LinkId=2124703)
-      - [vcredist2019_x64](https://github.com/SoftFever/OrcaSlicer/releases/download/v1.0.10-sf2/vcredist2019_x64.exe)
+      - [vcredist2019_x64](https://github.com/printago/OrcaSlicer-PrintagoEdition/releases/download/v1.0.10-sf2/vcredist2019_x64.exe)
           -  [Alternative Download Link Hosted by Microsoft](https://aka.ms/vs/17/release/vc_redist.x64.exe)
           -  This file may already be available on your computer if you've installed visual studio.  Check the following location: `%VCINSTALLDIR%Redist\MSVC\v142`
 
@@ -126,7 +126,7 @@ Thank you! :)
 </table>
 
 ### Backers:  
-Ko-fi supporters: [Backers list](https://github.com/SoftFever/OrcaSlicer/wiki/OrcaSlicer-backers-%E2%80%90-28-Oct-2023)
+Ko-fi supporters: [Backers list](https://github.com/printago/OrcaSlicer-PrintagoEdition/wiki/OrcaSlicer-backers-%E2%80%90-28-Oct-2023)
 
 Support me  
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/G2G5IP3CP)
@@ -140,6 +140,8 @@ Orca Slicer's logo is designed by community member Justin Levine(@freejstnalxndr
 
 
 # License
+Orca Slicer - Printago Edition is licensed under the GNU Affero General Public License, version 3. Orca Slicer - Printago Edition is based on Orca Slicer by SoftFever.
+
 Orca Slicer is licensed under the GNU Affero General Public License, version 3. Orca Slicer is based on Bambu Studio by BambuLab.
 
 Bambu Studio is licensed under the GNU Affero General Public License, version 3. Bambu Studio is based on PrusaSlicer by PrusaResearch.
