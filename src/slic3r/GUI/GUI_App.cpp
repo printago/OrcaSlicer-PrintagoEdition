@@ -4759,7 +4759,7 @@ void GUI_App::start_sync_user_preset(bool with_progress_dlg, bool from_printago)
             CallAfter([=] {
                 if (ok && m_agent && t.lock() == m_user_sync_token && userid == m_agent->get_user_id()) {
                     reload_settings();
-                    wxGetApp().printago_director()->RefreshUserCloudProfilesComplete();
+                    wxGetApp().printago_director()->RefreshUserCloudProfilesComplete(ok);
                 }
             });
         };

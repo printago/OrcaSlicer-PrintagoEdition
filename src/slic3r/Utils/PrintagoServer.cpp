@@ -915,9 +915,13 @@ bool PrintagoDirector::RefreshUserCloudProfilesStart()
     return false;
 }
 
-void PrintagoDirector::RefreshUserCloudProfilesComplete() {
+void PrintagoDirector::RefreshUserCloudProfilesComplete(bool success) {
     std::string username = wxGetApp().getAgent()->is_user_login() ? wxGetApp().getAgent()->get_user_name() : "nouser@bbl";
-    PostSuccessMessage(username, "sync_profiles", "sync_profiles", "syncing profiles: complete");
+    if (success) {
+        PostSuccessMessage(username, "sync_profiles", "sync_profiles", "syncing profiles: complete");
+    } else {
+        PostErrorMessage(username, "sync_profiles", "sync_profiles", "an error occurred syncing profiles from Bambu cloud");
+    }
 }
 
 void PrintagoDirector::OverridePrintSettings()
@@ -1002,8 +1006,8 @@ void PrintagoDirector::OverridePrintSettings()
     printSettings["print_settings_id"] = newProfileName.ToStdString();
 
     wxFileName newPrintSettingsPath(printSettingsPath);
-    newPrintSettingsPath.SetName(newProfileName);
-    wxString z = newPrintSettingsPath.GetFullPath();
+    newPrintSettingsPath.SetName(newProfileName.ToStdString());
+
     std::ofstream outFile(newPrintSettingsPath.GetFullPath());
     outFile << printSettings.dump(2);
 
