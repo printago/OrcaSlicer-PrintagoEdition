@@ -7,6 +7,5 @@
   "line_width": "0.4",
   "inherits": "fdm_process_common",
   "name": "0.08mm Standard @Kingroon KP3S PRO S1",
-  "print_settings_id": "0.08mm Standard @Kingroon KP3S PRO S1",
-  "instantiation": "true"
+  "print_settings_id": "0.08mm Standard @Kingroon KP3S PRO S1"
 }

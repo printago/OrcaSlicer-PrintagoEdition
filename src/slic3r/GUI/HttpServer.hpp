@@ -1,7 +1,6 @@
 #ifndef slic3r_Http_App_hpp_
 #define slic3r_Http_App_hpp_
 
-#include <iostream>
 #include <mutex>
 #include <stack>
 
@@ -13,6 +12,7 @@
 #include <string>
 #include <memory>
 
+using namespace boost;
 using namespace boost::system;
 using namespace boost::asio;
 
@@ -73,21 +73,21 @@ public:
 
 class session
 {
-    boost::asio::streambuf buff;
+    asio::streambuf buff;
     http_headers headers;
 
     static void read_body(std::shared_ptr<session> pThis)
     {
         int nbuffer = 1000;
         std::shared_ptr<std::vector<char>> bufptr = std::make_shared<std::vector<char>>(nbuffer);
-        boost::asio::async_read(pThis->socket, boost::asio::buffer(*bufptr, nbuffer), [pThis](const boost::beast::error_code& e, std::size_t s)
+        asio::async_read(pThis->socket, boost::asio::buffer(*bufptr, nbuffer), [pThis](const boost::beast::error_code& e, std::size_t s)
             {
             });
     }
 
     static void read_next_line(std::shared_ptr<session> pThis)
     {
-        boost::asio::async_read_until(pThis->socket, pThis->buff, '\r', [pThis](const boost::beast::error_code& e, std::size_t s)
+        asio::async_read_until(pThis->socket, pThis->buff, '\r', [pThis](const boost::beast::error_code& e, std::size_t s)
             {
                 std::string line, ignore;
                 std::istream stream{ &pThis->buff };
@@ -100,7 +100,7 @@ class session
                     if (pThis->headers.content_length() == 0)
                     {
                         std::shared_ptr<std::string> str = std::make_shared<std::string>(pThis->headers.get_response());
-                        boost::asio::async_write(pThis->socket, boost::asio::buffer(str->c_str(), str->length()), [pThis, str](const boost::beast::error_code& e, std::size_t s)
+                        asio::async_write(pThis->socket, boost::asio::buffer(str->c_str(), str->length()), [pThis, str](const boost::beast::error_code& e, std::size_t s)
                             {
                                 std::cout << "done" << std::endl;
                             });
@@ -119,7 +119,7 @@ class session
 
     static void read_first_line(std::shared_ptr<session> pThis)
     {
-        boost::asio::async_read_until(pThis->socket, pThis->buff, '\r', [pThis](const boost::beast::error_code& e, std::size_t s)
+        asio::async_read_until(pThis->socket, pThis->buff, '\r', [pThis](const boost::beast::error_code& e, std::size_t s)
             {
                 std::string line, ignore;
                 std::istream stream{ &pThis->buff };

@@ -2,7 +2,6 @@
 #define slic3r_MonitorPage_hpp_
 
 #include <wx/panel.h>
-#include <wx/sizer.h>
 
 namespace Slic3r {
 namespace GUI {

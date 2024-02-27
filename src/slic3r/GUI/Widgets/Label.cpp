@@ -2,10 +2,6 @@
 #include "Label.hpp"
 #include "StaticBox.hpp"
 #include <wx/intl.h> // For wxLocale
-#include <wx/dcclient.h>
-#include <wx/settings.h>
-#include <boost/log/trivial.hpp>
-
 
 wxFont Label::sysFont(int size, bool bold)
 {

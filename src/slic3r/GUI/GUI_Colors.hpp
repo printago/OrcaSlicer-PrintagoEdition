@@ -3,7 +3,6 @@
 
 #include "imgui/imgui.h"
 #include "libslic3r/Color.hpp"
-#include <array>
 
 enum RenderCol_ {
     RenderCol_3D_Background = 0,

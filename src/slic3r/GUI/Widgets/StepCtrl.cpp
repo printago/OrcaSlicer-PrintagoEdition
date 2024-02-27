@@ -1,9 +1,6 @@
 #include "StepCtrl.hpp"
 #include "Label.hpp"
 
-#include <wx/dc.h>
-#include <wx/pen.h>
-
 wxDEFINE_EVENT( EVT_STEP_CHANGING, wxCommandEvent );
 wxDEFINE_EVENT( EVT_STEP_CHANGED, wxCommandEvent );
 

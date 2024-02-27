@@ -1,7 +1,6 @@
 #include "SideMenuPopup.hpp"
 #include "Label.hpp"
 
-#include <wx/display.h>
 #include <wx/dcgraph.h>
 #include "../GUI_App.hpp"
 

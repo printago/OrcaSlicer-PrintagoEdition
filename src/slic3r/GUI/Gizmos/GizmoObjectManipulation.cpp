@@ -266,8 +266,11 @@ void GizmoObjectManipulation::change_position_value(int axis, double value)
     selection.setup_cache();
     TransformationType trafo_type;
     trafo_type.set_relative();
-    if (selection.requires_local_axes()) {
-        trafo_type.set_local();
+    switch (m_coordinates_type)
+    {
+    case ECoordinatesType::Instance: { trafo_type.set_instance(); break; }
+    case ECoordinatesType::Local:    { trafo_type.set_local(); break; }
+    default:                         { break; }
     }
     selection.translate(position - m_cache.position, trafo_type);
     m_glcanvas.do_move(L("Set Position"));

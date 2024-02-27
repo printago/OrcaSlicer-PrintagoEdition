@@ -1,7 +1,6 @@
 #include "ColorSpaceConvert.hpp"
 
 #include <algorithm>
-#include <cmath>
 
 const static float param_13 = 1.0f / 3.0f;
 const static float param_16116 = 16.0f / 116.0f;

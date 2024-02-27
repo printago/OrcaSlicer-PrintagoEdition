@@ -1,7 +1,6 @@
 #include "Model.hpp"
 #include "Print.hpp"
 
-#include <boost/log/trivial.hpp>
 #include <cfloat>
 
 namespace Slic3r {

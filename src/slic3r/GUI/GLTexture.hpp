@@ -6,9 +6,6 @@
 #include <vector>
 #include <thread>
 
-#include <wx/colour.h>
-#include <wx/font.h>
-
 class wxImage;
 
 namespace Slic3r {

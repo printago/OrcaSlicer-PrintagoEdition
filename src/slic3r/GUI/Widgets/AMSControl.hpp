@@ -140,7 +140,6 @@ struct Caninfo
     wxString        material_name;
     wxColour        material_colour = {*wxWHITE};
     AMSCanType      material_state;
-    int             ctype=0;
     int             material_remain = 100;
     float           k = 0.0f;
     float           n = 0.0f;
@@ -299,7 +298,6 @@ public:
     Caninfo      m_info;
     MachineObject* m_obj = {nullptr};
     int          m_can_index = 0;
-    bool         transparent_changed = { false };
     AMSModel     m_ams_model;
 
     void         Update(Caninfo info, bool refresh = true);
@@ -324,7 +322,6 @@ protected:
     ScalableBitmap  m_bitmap_readonly;
     ScalableBitmap  m_bitmap_readonly_light;
     ScalableBitmap  m_bitmap_transparent;
-    ScalableBitmap  m_bitmap_transparent_def;
 
     ScalableBitmap  m_bitmap_extra_tray_left;
     ScalableBitmap  m_bitmap_extra_tray_right;
@@ -341,7 +338,6 @@ protected:
     bool            m_hover           = {false};
     bool            m_show_kn         = {false};
     bool            m_support_cali    = {false};
-    
 
     double   m_radius = {4};
     wxColour m_border_color;

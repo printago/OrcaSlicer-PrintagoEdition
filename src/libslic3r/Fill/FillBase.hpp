@@ -19,7 +19,6 @@
 #include "../Flow.hpp"
 #include "../ExtrusionEntity.hpp"
 #include "../ExtrusionEntityCollection.hpp"
-#include "../ShortestPath.hpp"
 
 namespace Slic3r {
 
@@ -107,7 +106,6 @@ public:
     FillAdaptive::Octree* adapt_fill_octree = nullptr;
 
     // PrintConfig and PrintObjectConfig are used by infills that use Arachne (Concentric and FillEnsuring).
-    // Orca: also used by gap fill function.
     const PrintConfig       *print_config        = nullptr;
     const PrintObjectConfig *print_object_config = nullptr;
 
@@ -136,7 +134,7 @@ public:
     // Perform the fill.
     virtual Polylines fill_surface(const Surface *surface, const FillParams &params);
     virtual ThickPolylines fill_surface_arachne(const Surface* surface, const FillParams& params);
-    
+
     // BBS: this method is used to fill the ExtrusionEntityCollection.
     // It call fill_surface by default
     virtual void fill_surface_extrusion(const Surface* surface, const FillParams& params, ExtrusionEntitiesPtr& out);
@@ -174,10 +172,6 @@ protected:
     virtual float _layer_angle(size_t idx) const { return (idx & 1) ? float(M_PI/2.) : 0; }
 
     virtual std::pair<float, Point> _infill_direction(const Surface *surface) const;
-    
-    // Orca: Dedicated function to calculate gap fill lines for the provided surface, according to the print object parameters
-    // and append them to the out ExtrusionEntityCollection.
-    void _create_gap_fill(const Surface* surface, const FillParams& params, ExtrusionEntityCollection* out);
 
 public:
     static void connect_infill(Polylines &&infill_ordered, const ExPolygon &boundary, Polylines &polylines_out, const double spacing, const FillParams &params);

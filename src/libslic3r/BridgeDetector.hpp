@@ -43,7 +43,8 @@ public:
     BridgeDetector(const ExPolygons &_expolygons, const ExPolygons &_lower_slices, coord_t _extrusion_width);
     // If bridge_direction_override != 0, then the angle is used instead of auto-detect.
     bool detect_angle(double bridge_direction_override = 0.);
-    Polygons coverage(double angle = -1, bool precise = true) const;
+    // Coverage is currently only used by the unit tests. It is extremely slow and unreliable!
+    Polygons coverage(double angle = -1) const;
     void unsupported_edges(double angle, Polylines* unsupported) const;
     Polylines unsupported_edges(double angle = -1) const;
     

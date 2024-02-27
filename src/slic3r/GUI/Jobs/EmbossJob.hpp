@@ -113,9 +113,6 @@ struct DataUpdate
 
     // unique identifier of volume to change
     ObjectID volume_id;
-
-    // Used for prevent flooding Undo/Redo stack on slider.
-    bool make_snapshot;
 };
 
 /// <summary>

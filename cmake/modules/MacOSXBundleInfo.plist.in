@@ -26,17 +26,6 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>${MACOSX_BUNDLE_BUNDLE_VERSION}</string>
-  <key>CFBundleURLTypes</key>
-  <array>
-    <dict>
-      <key>CFBundleURLName</key>
-      <string>orcasliceropen url</string>
-      <key>CFBundleURLSchemes</key>
-      <array>
-        <string>orcasliceropen</string>
-      </array>
-    </dict>
-  </array>
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
@@ -46,7 +35,7 @@
 			<string>STL</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>images/stl.icns</string>
+			<string>stl.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>STL</string>
 			<key>CFBundleTypeRole</key>
@@ -63,7 +52,7 @@
 			<string>OBJ</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>images/OrcaSlicer.icns</string>
+			<string>OrcaSlicer.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>STL</string>
 			<key>CFBundleTypeRole</key>
@@ -80,7 +69,7 @@
 			<string>AMF</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>images/OrcaSlicer.icns</string>
+			<string>OrcaSlicer.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>AMF</string>
 			<key>CFBundleTypeRole</key>
@@ -97,7 +86,7 @@
 			<string>3MF</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>images/OrcaSlicer.icns</string>
+			<string>OrcaSlicer.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>3MF</string>
 			<key>CFBundleTypeRole</key>
@@ -114,7 +103,7 @@
 			<string>GCODE</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
-			<string>images/gcode.icns</string>
+			<string>gcode.icns</string>
 			<key>CFBundleTypeName</key>
 			<string>GCODE</string>
 			<key>CFBundleTypeRole</key>

@@ -11,11 +11,9 @@
 #include "../MutablePolygon.hpp"
 #include "../Geometry.hpp"
 #include "../Point.hpp"
-#include "clipper/clipper_z.hpp"
 
 #include <cmath>
 #include <boost/container/static_vector.hpp>
-#include <boost/log/trivial.hpp>
 
 #include <tbb/parallel_for.h>
 

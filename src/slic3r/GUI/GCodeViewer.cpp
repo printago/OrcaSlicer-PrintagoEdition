@@ -2,7 +2,6 @@
 #include "GCodeViewer.hpp"
 
 #include "libslic3r/BuildVolume.hpp"
-#include "libslic3r/ClipperUtils.hpp"
 #include "libslic3r/Print.hpp"
 #include "libslic3r/Geometry.hpp"
 #include "libslic3r/Model.hpp"

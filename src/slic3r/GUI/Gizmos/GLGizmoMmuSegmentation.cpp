@@ -922,6 +922,7 @@ void GLMmSegmentationGizmo3DScene::render(size_t triangle_indices_idx) const
 {
     assert(triangle_indices_idx < this->triangle_indices_VBO_ids.size());
     assert(this->triangle_patches.size() == this->triangle_indices_VBO_ids.size());
+    assert(this->vertices_VAO_id != 0);
     assert(this->vertices_VBO_id != 0);
     assert(this->triangle_indices_VBO_ids[triangle_indices_idx] != 0);
 
@@ -953,6 +954,7 @@ void GLMmSegmentationGizmo3DScene::render(size_t triangle_indices_idx) const
 
 void GLMmSegmentationGizmo3DScene::finalize_vertices()
 {
+    assert(this->vertices_VAO_id == 0);
     assert(this->vertices_VBO_id == 0);
     if (!this->vertices.empty()) {
         glsafe(::glGenBuffers(1, &this->vertices_VBO_id));

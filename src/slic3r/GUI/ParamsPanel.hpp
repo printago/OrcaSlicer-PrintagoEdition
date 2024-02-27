@@ -20,8 +20,6 @@
 #include <wx/image.h>
 #include <wx/icon.h>
 #include <wx/button.h>
-#include <wx/timer.h>
-#include <wx/wupdlock.h>
 #include <wx/sizer.h>
 #include <wx/statline.h>
 #include <wx/scrolwin.h>

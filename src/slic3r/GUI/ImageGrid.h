@@ -9,7 +9,6 @@
 #define ImageGrid_h
 
 #include <wx/window.h>
-#include <wx/timer.h>
 #include <wx/arrstr.h>
 #include <boost/shared_ptr.hpp>
 

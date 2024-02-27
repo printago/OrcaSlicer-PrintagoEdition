@@ -6,7 +6,6 @@
 #define SLAIMPORTJOB_HPP
 
 #include "Job.hpp"
-#include "libslic3r/Point.hpp"
 
 namespace Slic3r { namespace GUI {
 

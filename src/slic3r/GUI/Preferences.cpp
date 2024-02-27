@@ -167,12 +167,6 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(
         else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_TURKISH)) {
             language_name = wxString::FromUTF8("Turkish");
         }
-        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_POLISH)) {
-            language_name = wxString::FromUTF8("Polski");
-        }
-        else if (vlist[i] == wxLocale::GetLanguageInfo(wxLANGUAGE_CATALAN)) {
-            language_name = wxString::FromUTF8("Catalan");
-        }
 
         if (app_config->get(param) == vlist[i]->CanonicalName) {
             m_current_language_selected = i;
@@ -228,7 +222,7 @@ wxBoxSizer *PreferencesDialog::create_item_language_combobox(
             auto check = [this](bool yes_or_no) {
                 // if (yes_or_no)
                 //    return true;
-                int act_btns = ActionButtons::SAVE;
+                int act_btns = UnsavedChangesDialog::ActionButtons::SAVE;
                 return wxGetApp().check_and_keep_current_preset_changes(_L("Switching application language"),
                                                                         _L("Switching application language while some presets are modified."), act_btns);
             };
@@ -670,7 +664,6 @@ wxBoxSizer *PreferencesDialog::create_item_checkbox(wxString title, wxWindow *pa
             } else {
                 wxGetApp().stop_sync_user_preset();
             }
-            BOOST_LOG_TRIVIAL(info) << __FUNCTION__ << " sync_user_preset: " << (sync ? "true" : "false");
         }
 
         #ifdef __WXMSW__
@@ -976,9 +969,8 @@ wxWindow* PreferencesDialog::create_general_page()
         wxLANGUAGE_KOREAN,
         wxLANGUAGE_RUSSIAN,
         wxLANGUAGE_UKRAINIAN,
-        wxLANGUAGE_TURKISH,
-        wxLANGUAGE_POLISH,
-        wxLANGUAGE_CATALAN
+        wxLANGUAGE_TURKISH
+
     };
 
     auto translations = wxTranslations::Get()->GetAvailableTranslations(SLIC3R_APP_KEY);

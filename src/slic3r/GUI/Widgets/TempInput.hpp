@@ -3,7 +3,6 @@
 
 #include "../wxExtensions.hpp"
 #include <wx/textctrl.h>
-#include <wx/stattext.h>
 #include "StaticBox.hpp"
 
 wxDECLARE_EVENT(wxCUSTOMEVT_SET_TEMP_FINISH, wxCommandEvent);

@@ -1,6 +1,5 @@
 #include "FileHelp.hpp"
 #include <boost/filesystem.hpp>
-#include <boost/log/trivial.hpp>
 #include <regex>
 namespace Slic3r {
     namespace Utils {

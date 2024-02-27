@@ -4,8 +4,6 @@
 
 #include "libslic3r/Utils.hpp"
 
-#include <boost/property_tree/ptree.hpp>
-
 namespace pt = boost::property_tree;
 typedef pt::ptree JSON;
 

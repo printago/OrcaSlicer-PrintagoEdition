@@ -51,16 +51,13 @@
         "270"
     ],
     "nozzle_temperature_range_low": [
-        "230"
+        "240"
     ],
     "overhang_fan_speed": [
         "90"
     ],
     "overhang_fan_threshold": [
         "10%"
-    ],
-    "slow_down_layer_time": [
-        "12"
     ],
     "textured_plate_temp": [
         "70"

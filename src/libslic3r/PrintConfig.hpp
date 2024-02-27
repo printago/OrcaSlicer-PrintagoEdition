@@ -98,28 +98,11 @@ enum class WallSequence {
     InnerOuterInner,
     Count,
 };
-
-// Orca
-enum class WallDirection
-{
-    Auto,
-    CounterClockwise,
-    Clockwise,
-    Count,
-};
-
 //BBS
 enum class PrintSequence {
     ByLayer,
     ByObject,
     ByDefault,
-    Count,
-};
-
-enum class PrintOrder
-{
-    Default,
-    AsObjectList,
     Count,
 };
 
@@ -168,17 +151,6 @@ inline bool is_auto(SupportType stype)
 enum SeamPosition {
     spNearest, spAligned, spRear, spRandom
 };
-
-//Orca
-enum InternalBridgeFilter {
-    ibfDisabled, ibfLimited, ibfNofilter
-};
-
-//Orca
-enum GapFillTarget {
-     gftEverywhere, gftTopBottom, gftNowhere
- };
-
 
 enum LiftType {
     NormalLift,
@@ -303,10 +275,6 @@ enum class GCodeThumbnailsFormat {
     PNG, JPG, QOI, BTT_TFT, ColPic
 };
 
-enum CounterboleHoleBridgingOption {
-    chbNone, chbBridges, chbFilled
-};
-
 static std::string bed_type_to_gcode_string(const BedType type)
 {
     std::string type_str;
@@ -390,7 +358,7 @@ CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(BedType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(DraftShield)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(ForwardCompatibilitySubstitutionRule)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(GCodeThumbnailsFormat)
-CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(CounterboleHoleBridgingOption)
+
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(PrintHostType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(AuthorizationType)
 CONFIG_OPTION_ENUM_DECLARE_STATIC_MAPS(PerimeterGeneratorType)
@@ -776,7 +744,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     // Orca internal thick bridge
     ((ConfigOptionBool,                thick_bridges))
     ((ConfigOptionBool,                thick_internal_bridges))
-    ((ConfigOptionEnum<InternalBridgeFilter>,  dont_filter_internal_bridges))
     // Overhang angle threshold.
     ((ConfigOptionInt,                 support_threshold_angle))
     ((ConfigOptionFloat,               support_object_xy_distance))
@@ -817,8 +784,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionPercent,            tree_support_top_rate))
     ((ConfigOptionFloat,              tree_support_branch_diameter_organic))
     ((ConfigOptionFloat,              tree_support_branch_angle_organic))
-    ((ConfigOptionEnum<GapFillTarget>,gap_fill_target))
-    ((ConfigOptionFloat,              min_length_factor))
 
     // Move all acceleration and jerk settings to object
     ((ConfigOptionFloat,              default_acceleration))
@@ -853,7 +818,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat,                bridge_speed))
     ((ConfigOptionFloatOrPercent,       internal_bridge_speed))
     ((ConfigOptionBool,                 ensure_vertical_shell_thickness))
-    ((ConfigOptionBool,                 reduce_wall_solid_infill))
     ((ConfigOptionEnum<InfillPattern>,  top_surface_pattern))
     ((ConfigOptionEnum<InfillPattern>,  bottom_surface_pattern))
     ((ConfigOptionEnum<InfillPattern>, internal_solid_infill_pattern))
@@ -938,11 +902,9 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionBool,                 overhang_reverse))
     ((ConfigOptionBool,                 overhang_reverse_internal_only))
     ((ConfigOptionFloatOrPercent,       overhang_reverse_threshold))
-    ((ConfigOptionEnum<CounterboleHoleBridgingOption>, counterbole_hole_bridging))
+    
     ((ConfigOptionEnum<WallSequence>,  wall_sequence))
     ((ConfigOptionBool,                is_infill_first))
-    ((ConfigOptionBool,                small_area_infill_flow_compensation))
-    ((ConfigOptionEnum<WallDirection>,  wall_direction))
 )
 
 PRINT_CONFIG_CLASS_DEFINE(
@@ -1090,8 +1052,6 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionBool,                enable_filament_ramming))
     ((ConfigOptionBool,                support_multi_bed_types))
 
-    // Small Area Infill Flow Compensation
-    ((ConfigOptionStrings,              small_area_infill_flow_compensation_model))
 )
 
 // This object is mapped to Perl as Slic3r::Config::Print.
@@ -1123,7 +1083,6 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionInts,               overhang_fan_speed))
     ((ConfigOptionEnumsGeneric,       overhang_fan_threshold))
     ((ConfigOptionEnum<PrintSequence>,print_sequence))
-    ((ConfigOptionEnum<PrintOrder>,   print_order))
     ((ConfigOptionInts,               first_layer_print_sequence))
     ((ConfigOptionBools,              slow_down_for_layer_cooling))
     ((ConfigOptionInts,               close_fan_the_first_x_layers))
@@ -1224,12 +1183,7 @@ PRINT_CONFIG_CLASS_DERIVED_DEFINE(
     ((ConfigOptionBools,               activate_chamber_temp_control))
     ((ConfigOptionInts ,               chamber_temperature))
     
-    // Orca: support adaptive bed mesh
     ((ConfigOptionFloat,               preferred_orientation))
-    ((ConfigOptionPoint,               bed_mesh_min))
-    ((ConfigOptionPoint,               bed_mesh_max))
-    ((ConfigOptionPoint,               bed_mesh_probe_distance))
-    ((ConfigOptionFloat,               adaptive_bed_mesh_margin))
 
 
 )
@@ -1483,74 +1437,6 @@ class CLIMiscConfigDef : public ConfigDef
 public:
     CLIMiscConfigDef();
 };
-
-typedef std::string t_custom_gcode_key;
-// This map containes list of specific placeholders for each custom G-code, if any exist
-const std::map<t_custom_gcode_key, t_config_option_keys>& custom_gcode_specific_placeholders();
-
-// Next classes define placeholders used by GUI::EditGCodeDialog.
-
-class ReadOnlySlicingStatesConfigDef : public ConfigDef
-{
-public:
-    ReadOnlySlicingStatesConfigDef();
-};
-
-class ReadWriteSlicingStatesConfigDef : public ConfigDef
-{
-public:
-    ReadWriteSlicingStatesConfigDef();
-};
-
-class OtherSlicingStatesConfigDef : public ConfigDef
-{
-public:
-    OtherSlicingStatesConfigDef();
-};
-
-class PrintStatisticsConfigDef : public ConfigDef
-{
-public:
-    PrintStatisticsConfigDef();
-};
-
-class ObjectsInfoConfigDef : public ConfigDef
-{
-public:
-    ObjectsInfoConfigDef();
-};
-
-class DimensionsConfigDef : public ConfigDef
-{
-public:
-    DimensionsConfigDef();
-};
-
-class TemperaturesConfigDef : public ConfigDef
-{
-public:
-    TemperaturesConfigDef();
-};
-
-class TimestampsConfigDef : public ConfigDef
-{
-public:
-    TimestampsConfigDef();
-};
-
-class OtherPresetsConfigDef : public ConfigDef
-{
-public:
-    OtherPresetsConfigDef();
-};
-
-// This classes defines all custom G-code specific placeholders.
-class CustomGcodeSpecificConfigDef : public ConfigDef
-{
-public:
-    CustomGcodeSpecificConfigDef();
-};
-extern const CustomGcodeSpecificConfigDef    custom_gcode_specific_config_def;
 
 // This class defines the command line options representing actions.
 extern const CLIActionsConfigDef    cli_actions_config_def;

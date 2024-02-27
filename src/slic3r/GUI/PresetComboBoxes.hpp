@@ -4,7 +4,6 @@
 //#include <wx/bmpcbox.h>
 #include <wx/gdicmn.h>
 #include <wx/clrpicker.h>
-#include <wx/colourdata.h>
 
 #include "libslic3r/Preset.hpp"
 #include "wxExtensions.hpp"

@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Orca Slicer\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-01-27 13:20+0800\n"
+"POT-Creation-Date: 2023-12-29 22:55+0800\n"
 "PO-Revision-Date: \n"
 "Last-Translator: Heiko Liebscher <hliebschergmail.com>\n"
 "Language-Team: \n"
@@ -270,16 +270,16 @@ msgid "uniform scale"
 msgstr "einheitliche Skalierung"
 
 msgid "Planar"
-msgstr "Planar"
+msgstr ""
 
 msgid "Dovetail"
-msgstr "Schwalbenschwanz"
+msgstr ""
 
 msgid "Auto"
 msgstr "Automatisch"
 
 msgid "Manual"
-msgstr "Manuell"
+msgstr ""
 
 msgid "Plug"
 msgstr "Einstecken"
@@ -288,10 +288,10 @@ msgid "Dowel"
 msgstr "Dübel"
 
 msgid "Snap"
-msgstr "Einrasten"
+msgstr ""
 
 msgid "Prism"
-msgstr "Prisma"
+msgstr ""
 
 msgid "Frustum"
 msgstr "Frustum"
@@ -303,13 +303,13 @@ msgid "Hexagon"
 msgstr "Sechseck"
 
 msgid "Keep orientation"
-msgstr "Ausrichtung beibehalten"
+msgstr ""
 
 msgid "Place on cut"
 msgstr "auf den Schnitt legen"
 
 msgid "Flip upside down"
-msgstr "Auf den Kopf stellen"
+msgstr ""
 
 msgid "Connectors"
 msgstr "Verbinder"
@@ -327,19 +327,19 @@ msgstr "Form"
 #. Size in emboss direction
 #. TRN - Input label. Be short as possible
 msgid "Depth"
-msgstr "Tiefe"
+msgstr ""
 
 msgid "Groove"
-msgstr "Nut"
+msgstr ""
 
 msgid "Width"
 msgstr "Breite"
 
 msgid "Flap Angle"
-msgstr "Flügelwinkel"
+msgstr ""
 
 msgid "Groove Angle"
-msgstr "Nutwinkel"
+msgstr ""
 
 msgid "Part"
 msgstr "Teil"
@@ -351,27 +351,21 @@ msgid ""
 "Click to flip the cut plane\n"
 "Drag to move the cut plane"
 msgstr ""
-"Klicken Sie, um die Schnittebene umzudrehen\n"
-"Ziehen Sie, um die Schnittebene zu bewegen"
 
 msgid ""
 "Click to flip the cut plane\n"
 "Drag to move the cut plane\n"
 "Right-click a part to assign it to the other side"
 msgstr ""
-"Klicken Sie, um die Schnittebene umzudrehen\n"
-"Ziehen Sie, um die Schnittebene zu bewegen\n"
-"Klicken Sie mit der rechten Maustaste auf ein Teil, um es der anderen Seite "
-"zuzuordnen"
 
 msgid "Move cut plane"
-msgstr "Schnittfläche bewegen"
+msgstr ""
 
 msgid "Mode"
-msgstr "Modus"
+msgstr ""
 
 msgid "Change cut mode"
-msgstr "Schnittmodus ändern"
+msgstr ""
 
 msgid "Tolerance"
 msgstr "Toleranz"
@@ -380,7 +374,7 @@ msgid "Drag"
 msgstr "Ziehen"
 
 msgid "Draw cut line"
-msgstr "Schnittlinie zeichnen"
+msgstr ""
 
 msgid "Left click"
 msgstr "Linksklick"
@@ -410,22 +404,22 @@ msgid "Cut"
 msgstr "Schneiden"
 
 msgid "Rotate cut plane"
-msgstr "Schnittfläche drehen"
+msgstr ""
 
 msgid "Remove connectors"
 msgstr "Verbinder entfernen"
 
 msgid "Bulge"
-msgstr "Wölbung"
+msgstr ""
 
 msgid "Bulge proportion related to radius"
-msgstr "Wölbungsverhältnis in Bezug auf den Radius"
+msgstr ""
 
 msgid "Space"
 msgstr "Platz"
 
 msgid "Space proportion related to radius"
-msgstr "Platzverhältnis in Bezug auf den Radius"
+msgstr ""
 
 msgid "Confirm connectors"
 msgstr "Bestätige Verbinder"
@@ -434,26 +428,26 @@ msgid "Cancel"
 msgstr "Abbrechen"
 
 msgid "Build Volume"
-msgstr "Bau Volumen"
+msgstr ""
 
 msgid "Flip cut plane"
-msgstr "Schnittfläche umdrehen"
+msgstr ""
 
 msgid "Groove change"
-msgstr "Nut ändern"
+msgstr ""
 
 msgid "Reset"
 msgstr "Zurücksetzen"
 
 #. TRN: This is an entry in the Undo/Redo stack. The whole line will be 'Edited: (name of whatever was edited)'.
 msgid "Edited"
-msgstr "Bearbeitet"
+msgstr ""
 
 msgid "Cut position"
-msgstr "Schnittposition"
+msgstr ""
 
 msgid "Reset cutting plane"
-msgstr "Schnittfläche zurücksetzen"
+msgstr ""
 
 msgid "Edit connectors"
 msgstr "Verbinder ändern"
@@ -462,10 +456,10 @@ msgid "Add connectors"
 msgstr "Verbinder zufügen"
 
 msgid "Reset cut"
-msgstr "Schnitt zurücksetzen"
+msgstr ""
 
 msgid "Reset cutting plane and remove connectors"
-msgstr "Schnittfläche zurücksetzen und Verbinder entfernen"
+msgstr ""
 
 msgid "Upper part"
 msgstr "Oberes Teil"
@@ -510,9 +504,7 @@ msgid "Some connectors are overlapped"
 msgstr "Einige Verbinder überlappen sich"
 
 msgid "Select at least one object to keep after cutting."
-msgstr ""
-"Wählen Sie mindestens ein Objekt aus, das nach dem Schneiden erhalten "
-"bleiben soll."
+msgstr "Wählen Sie mindestens ein Objekt aus, das nach dem Schneiden erhalten bleiben soll."
 
 msgid "Cut plane is placed out of object"
 msgstr "Schnittfläche ist außerhalb des Objekts platziert"
@@ -527,9 +519,7 @@ msgid "Cut by Plane"
 msgstr "Schnitt durch Ebene"
 
 msgid "non-manifold edges be caused by cut tool, do you want to fix it now?"
-msgstr ""
-"Nicht-manifold Kanten durch Schneidwerkzeug verursacht, möchten Sie es jetzt "
-"beheben?"
+msgstr "Nicht-manifold Kanten durch Schneidwerkzeug verursacht, möchten Sie es jetzt beheben?"
 
 msgid "Repairing model object"
 msgstr "Modellobjekt reparieren"
@@ -676,46 +666,46 @@ msgid "Text shape"
 msgstr "Text zufügen"
 
 msgid "Set Mirror"
-msgstr "Spiegel setzen"
+msgstr ""
 
 msgid "Embossed text"
-msgstr "Geprägter Text"
+msgstr ""
 
 msgid "Enter emboss gizmo"
-msgstr "Geprägten Teil eingeben"
+msgstr ""
 
 msgid "Leave emboss gizmo"
-msgstr "Geprägten Teil verlassen"
+msgstr ""
 
 msgid "Embossing actions"
-msgstr "Geprägte Aktionen"
+msgstr ""
 
 msgid "Emboss"
-msgstr "Prägen"
+msgstr ""
 
 msgid "Text-Rotate"
-msgstr "Text-Drehen"
+msgstr ""
 
 msgid "NORMAL"
-msgstr "Normal"
+msgstr ""
 
 msgid "SMALL"
-msgstr "Schmal"
+msgstr ""
 
 msgid "ITALIC"
-msgstr "kursiv"
+msgstr ""
 
 msgid "SWISS"
-msgstr "swiss"
+msgstr ""
 
 msgid "MODERN"
-msgstr "modern"
+msgstr ""
 
 msgid "First font"
-msgstr "erste Schriftart"
+msgstr ""
 
 msgid "Default font"
-msgstr "Standard-Schriftart"
+msgstr ""
 
 msgid "Advanced"
 msgstr "Erweiterte Einstellungen"
@@ -1010,12 +1000,9 @@ msgid ""
 "Can't load exactly same font(\"%1%\"). Aplication selected a similar "
 "one(\"%2%\"). You have to specify font for enable edit text."
 msgstr ""
-"Kann genau dieselbe Schriftart (\"%1%\") nicht laden. Die Anwendung hat eine "
-"ähnliche (\"%2%\") ausgewählt. Sie müssen eine Schriftart angeben, um die "
-"Textbearbeitung zu aktivieren."
 
 msgid "No symbol"
-msgstr "Kein Symbol"
+msgstr ""
 
 msgid "Loading"
 msgstr "Lade"
@@ -1088,7 +1075,7 @@ msgid "Leave SVG gizmo"
 msgstr "SVG-Gizmo verlassen"
 
 msgid "SVG actions"
-msgstr "SVG-Aktionen"
+msgstr ""
 
 msgid "SVG"
 msgstr "SVG"
@@ -1263,62 +1250,62 @@ msgstr "Nano SVG-Parser kann nicht aus Datei laden (%1%)."
 
 #, boost-format
 msgid "SVG file does NOT contain a single path to be embossed (%1%)."
-msgstr "SVG-Datei enthält keinen einzigen Pfad zum Prägen (%1%)."
+msgstr ""
 
 msgid "Vertex"
-msgstr "Eckpunkt"
+msgstr ""
 
 msgid "Edge"
-msgstr "Kante"
+msgstr ""
 
 msgid "Plane"
-msgstr "Ebene"
+msgstr ""
 
 msgid "Point on edge"
-msgstr "Punkt auf Kante"
+msgstr ""
 
 msgid "Point on circle"
-msgstr "Punkt auf Kreis"
+msgstr ""
 
 msgid "Point on plane"
-msgstr "Punkt auf Ebene"
+msgstr ""
 
 msgid "Center of edge"
-msgstr "Zentrum der Kante"
+msgstr ""
 
 msgid "Center of circle"
-msgstr "Zentrum des Kreises"
+msgstr ""
 
 msgid "ShiftLeft mouse button"
-msgstr "Umschalttaste + Linksklick"
+msgstr ""
 
 msgid "Select feature"
-msgstr "Feature auswählen"
+msgstr ""
 
 msgid "Select point"
-msgstr "Punkt auswählen"
+msgstr ""
 
 msgid "Delete"
 msgstr "Löschen"
 
 msgid "Restart selection"
-msgstr "Auswahl neu starten"
+msgstr ""
 
 msgid "Esc"
 msgstr "Esc"
 
 msgid "Unselect"
-msgstr "Abwählen"
+msgstr ""
 
 msgid "Measure"
-msgstr "Messen"
+msgstr ""
 
 msgid "Edit to scale"
-msgstr "Bearbeiten auf Skala"
+msgstr ""
 
 msgctxt "Verb"
 msgid "Scale"
-msgstr "Skalieren"
+msgstr ""
 
 msgid "None"
 msgstr "Keine"
@@ -1330,22 +1317,22 @@ msgid "Length"
 msgstr "Länge"
 
 msgid "Selection"
-msgstr "Auswahl"
+msgstr ""
 
 msgid "Copy to clipboard"
 msgstr "In Zwischenablage kopieren"
 
 msgid "Perpendicular distance"
-msgstr "Senkrechte Entfernung"
+msgstr ""
 
 msgid "Distance"
-msgstr "Entfernung"
+msgstr ""
 
 msgid "Direct distance"
-msgstr "Direkte Entfernung"
+msgstr ""
 
 msgid "Distance XYZ"
-msgstr "Entfernung XYZ"
+msgstr ""
 
 msgid "Ctrl+"
 msgstr "Strg +"
@@ -1414,9 +1401,6 @@ msgstr "Kritischer Fehler"
 #, boost-format
 msgid "OrcaSlicer got an unhandled exception: %1%"
 msgstr "OrcaSlicer hat eine unbehandelte Ausnahme erzeugt: %1%"
-
-msgid "Untitled"
-msgstr "Unbenannt"
 
 msgid "Downloading Bambu Network Plug-in"
 msgstr "Lade Orca Network Plug-in herunter"
@@ -1709,10 +1693,10 @@ msgid "Cone"
 msgstr "Kegel"
 
 msgid "Disc"
-msgstr "Scheibe"
+msgstr ""
 
 msgid "Torus"
-msgstr "Torus"
+msgstr ""
 
 msgid "Orca Cube"
 msgstr "Orca Würfel"
@@ -1727,7 +1711,7 @@ msgid "Voron Cube"
 msgstr "Voron Würfel"
 
 msgid "Stanford Bunny"
-msgstr "Stanford Hase"
+msgstr ""
 
 msgid "Text"
 msgstr "T"
@@ -1883,7 +1867,7 @@ msgid "Add Primitive"
 msgstr "Primitiv hinzufügen"
 
 msgid "Add Handy models"
-msgstr "Modelle hinzufügen"
+msgstr ""
 
 msgid "Show Labels"
 msgstr "Bezeichnung anzeigen"
@@ -2377,14 +2361,14 @@ msgstr "Kein Drucker"
 msgid "..."
 msgstr "..."
 
-msgid "Failed to connect to the server"
-msgstr "Verbindung zum Server fehlgeschlagen"
-
 msgid "Check the status of current system services"
 msgstr "Überprüfen Sie den Status der aktuellen Systemdienste"
 
 msgid "code"
 msgstr "Code"
+
+msgid "Failed to connect to the server"
+msgstr "Verbindung zum Server fehlgeschlagen"
 
 msgid "Failed to connect to cloud service"
 msgstr "Verbindung zum Cloud-Dienst fehlgeschlagen"
@@ -3438,8 +3422,6 @@ msgid ""
 "Alternate extra wall only works with ensure vertical shell thickness "
 "disabled. "
 msgstr ""
-"Die alternative zusätzliche Wand funktioniert nur, wenn die vertikale "
-"Schalendicke deaktiviert ist."
 
 msgid ""
 "Change these settings automatically? \n"
@@ -3447,10 +3429,6 @@ msgid ""
 "wall\n"
 "No  - Dont use alternate extra wall"
 msgstr ""
-"Diese Einstellungen automatisch ändern? \n"
-"Ja - Vertikale Schalendicke deaktivieren und alternative zusätzliche Wand "
-"aktivieren\n"
-"Nein - Keine alternative zusätzliche Wand verwenden"
 
 msgid ""
 "Prime tower does not work when Adaptive Layer Height or Independent Support "
@@ -4080,7 +4058,7 @@ msgstr "Volumen:"
 msgid "Size:"
 msgstr "Größe:"
 
-#, c-format, boost-format
+#, boost-format
 msgid ""
 "Conflicts of gcode paths have been found at layer %d, z = %.2lf mm. Please "
 "separate the conflicted objects farther (%s <-> %s)."
@@ -4160,15 +4138,6 @@ msgstr "Live-Übertragung starten"
 
 msgid "Resolution"
 msgstr "Auflösung"
-
-msgid "Enable"
-msgstr "Aktivieren"
-
-msgid "Hostname or IP"
-msgstr "Hostname oder IP"
-
-msgid "Custom camera source"
-msgstr "Benutzerdefinierte Kameraquelle"
 
 msgid "Show \"Live Video\" guide page."
 msgstr "Anleitungsseite „Live-Video“ anzeigen."
@@ -4639,15 +4608,6 @@ msgstr[1] ""
 "Es sind %d Konfigurationen importiert. (Nur nicht-systemische und kompatible "
 "Konfigurationen)"
 
-msgid ""
-"\n"
-"Hint: Make sure you have added the corresponding printer before importing "
-"the configs."
-msgstr ""
-"\n"
-"Tipp: Stellen Sie sicher, dass Sie den entsprechenden Drucker hinzugefügt "
-"haben, bevor Sie die Konfigurationen importieren."
-
 msgid "Import result"
 msgstr "Ergebnis importieren"
 
@@ -4987,9 +4947,6 @@ msgstr "MicroSD-Karte"
 
 msgid "Camera Setting"
 msgstr "Kameraeinstellung"
-
-msgid "Switch Camera View"
-msgstr "Schalte Kameraperspektive"
 
 msgid "Control"
 msgstr "Steuerung"
@@ -5460,11 +5417,11 @@ msgstr "Entsperre aktuelle Platte "
 msgid "Lock current plate"
 msgstr "Speere aktuelle Platte"
 
-msgid "Edit current plate name"
-msgstr ""
-
 msgid "Customize current plate"
 msgstr "Aktuelle Platte anpassen"
+
+msgid "Untitled"
+msgstr "Unbenannt"
 
 #, boost-format
 msgid " plate %1%:"
@@ -5631,27 +5588,13 @@ msgstr "Der 3mf stammt nicht vom OrcaSlicer, lade nur die Geometriedaten."
 msgid "Load 3mf"
 msgstr "Lade 3mf"
 
-#, c-format, boost-format
-msgid ""
-"The 3mf's version %s is newer than %s's version %s, Found following keys "
-"unrecognized:"
+msgid "The Config can not be loaded."
+msgstr "Die Konfiguration kann nicht geladen werden."
+
+msgid "The 3mf is generated by old Orca Slicer, load geometry data only."
 msgstr ""
-"Die Version %s von 3mf ist neuer als die Version %s von %s, folgende "
-"Schlüssel wurden nicht erkannt:"
-
-msgid "You'd better upgrade your software.\n"
-msgstr "Sie sollten Ihre Software aktualisieren.\n"
-
-msgid "Newer 3mf version"
-msgstr "Neuere 3mf-Version"
-
-#, c-format, boost-format
-msgid ""
-"The 3mf's version %s is newer than %s's version %s, Suggest to upgrade your "
-"software."
-msgstr ""
-"Die Version %s der 3mf ist neuer als die Version %s %s. Bitte Ihre Software "
-"aktualisieren."
+"Die 3mf wurde mit einer alten Version von OrcaSlicer generiert, lade nur die "
+"Geometriedaten."
 
 msgid "Invalid values found in the 3mf:"
 msgstr "Ungültige Werte in der 3MF-Datei gefunden:"
@@ -6150,7 +6093,7 @@ msgid "Stealth Mode"
 msgstr "Unsichtbarer Modus"
 
 msgid "Check for stable updates only"
-msgstr "Nur nach stabilen Updates suchen"
+msgstr ""
 
 msgid "Metric"
 msgstr "Metrisch"
@@ -6760,8 +6703,8 @@ msgstr ""
 msgid ""
 "Timelapse is not supported because Print sequence is set to \"By object\"."
 msgstr ""
-"Zeitraffer wird nicht unterstützt, da die Druckreihenfolge auf \"Nach Objekt"
-"\" eingestellt ist."
+"Zeitraffer wird nicht unterstützt, da die Druckreihenfolge auf \"Nach "
+"Objekt\" eingestellt ist."
 
 msgid "Errors"
 msgstr "Fehler"
@@ -7074,8 +7017,6 @@ msgid ""
 "Layer height is too small.\n"
 "It will set to min_layer_height\n"
 msgstr ""
-"Die Schichthöhe ist zu klein.\n"
-"Sie wird auf min_layer_height gesetzt\n"
 
 msgid ""
 "Layer height exceeds the limit in Printer Settings -> Extruder -> Layer "
@@ -7096,13 +7037,13 @@ msgstr "Ignorieren"
 msgid ""
 "When recording timelapse without toolhead, it is recommended to add a "
 "\"Timelapse Wipe Tower\" \n"
-"by right-click the empty position of build plate and choose \"Add Primitive"
-"\"->\"Timelapse Wipe Tower\"."
+"by right-click the empty position of build plate and choose \"Add "
+"Primitive\"->\"Timelapse Wipe Tower\"."
 msgstr ""
 "Wenn Sie einen Zeitraffer ohne Werkzeugkopf aufnehmen, wird empfohlen, einen "
 "\"Timelapse Wischturm\" hinzuzufügen, indem Sie mit der rechten Maustaste "
-"auf die leere Position der Bauplatte klicken und \"Primitiv hinzufügen\"->"
-"\"Timelapse Wischturm\" wählen."
+"auf die leere Position der Bauplatte klicken und \"Primitiv hinzufügen\"-"
+">\"Timelapse Wischturm\" wählen."
 
 msgid "Line width"
 msgstr "Breite der Linie"
@@ -7118,9 +7059,6 @@ msgstr "Wandgenerator"
 
 msgid "Walls and surfaces"
 msgstr "Wände und Oberflächen"
-
-msgid "Small Area Infill Flow Compensation (beta)"
-msgstr ""
 
 msgid "Bridging"
 msgstr "Brücken"
@@ -7624,29 +7562,11 @@ msgstr "Allgemein"
 msgid "Capabilities"
 msgstr "Fähigkeiten"
 
-msgid "Show all presets (including incompatible)"
-msgstr "Alle Profile anzeigen (auch inkompatible)"
-
 msgid "Select presets to compare"
 msgstr "Wähle Voreinstellungen zum Vergleich aus"
 
-msgid ""
-"You can only transfer to current active profile because it has been modified."
-msgstr ""
-
-msgid ""
-"Transfer the selected options from left preset to the right.\n"
-"Note: New modified presets will be selected in settings tabs after close "
-"this dialog."
-msgstr ""
-
-msgid "Transfer values from left to right"
-msgstr ""
-
-msgid ""
-"If enabled, this dialog can be used for transver selected values from left "
-"to right preset."
-msgstr ""
+msgid "Show all presets (including incompatible)"
+msgstr "Alle Profile anzeigen (auch inkompatible)"
 
 msgid "Add File"
 msgstr "Datei hinzufügen"
@@ -7660,9 +7580,6 @@ msgstr "Abdeckung"
 #, boost-format
 msgid "The name \"%1%\" already exists."
 msgstr "Der Name \"%1%\" existiert bereits."
-
-msgid "Back"
-msgstr "Rückseite"
 
 msgid "Basic Info"
 msgstr "Basis-Info"
@@ -8002,15 +7919,6 @@ msgstr "SLA Stützpunkte"
 msgid "Gizmo FDM paint-on seam"
 msgstr "FDM Naht aufmalen"
 
-msgid "Gizmo Text emboss / engrave"
-msgstr "Text prägen / gravieren"
-
-msgid "Zoom in"
-msgstr "Vergrößern"
-
-msgid "Zoom out"
-msgstr "Verkleinern"
-
 msgid "Switch between Prepare/Preview"
 msgstr "Zwischen Vorbereiten/ Vorschau wechseln"
 
@@ -8181,7 +8089,7 @@ msgid "Idle"
 msgstr "Inaktiv"
 
 msgid "Beta version"
-msgstr "Beta-Version"
+msgstr ""
 
 msgid "Latest version"
 msgstr "Neueste Version"
@@ -9009,39 +8917,6 @@ msgstr ""
 "bedeutet, dass diese Einstellung deaktiviert ist und die Dicke der unteren "
 "Schale absolut durch die unteren Schalenschichten bestimmt wird."
 
-msgid "Apply gap fill"
-msgstr "Lückenfüllung anwenden"
-
-msgid ""
-"Enables gap fill for the selected surfaces. The minimum gap length that will "
-"be filled can be controlled from the filter out tiny gaps option below.\n"
-"\n"
-"Options:\n"
-"1. Everywhere: Applies gap fill to top, bottom and internal solid surfaces\n"
-"2. Top and Bottom surfaces: Applies gap fill to top and bottom surfaces "
-"only\n"
-"3. Nowhere: Disables gap fill\n"
-msgstr ""
-"Schaltet die Lückenfüllung für die ausgewählten Oberflächen ein. Die "
-"minimale Länge der Lücke, die gefüllt wird, kann über die Option \"winzige "
-"Lücken herausfiltern\" unten gesteuert werden.\n"
-"\n"
-"Optionen:\n"
-"1. Überall: Füllt Lücken in oberen, unteren und inneren massiven Oberflächen "
-"aus\n"
-"2. Obere und untere Oberflächen: Füllt Lücken nur in oberen und unteren "
-"Oberflächen aus\n"
-"3. Nirgendwo: Deaktiviert die Lückenfüllung\n"
-
-msgid "Everywhere"
-msgstr "Überall"
-
-msgid "Top and bottom surfaces"
-msgstr "Obere und untere Oberflächen"
-
-msgid "Nowhere"
-msgstr "Nirgendwo"
-
 msgid "Force cooling for overhang and bridge"
 msgstr "Zwangskühlung für Überhänge und Brücken"
 
@@ -9142,8 +9017,8 @@ msgid "This factor affects the amount of material for bottom solid infill"
 msgstr ""
 "Dieser Faktor beeinflusst die Menge des Materials für die untere Füllung"
 
-msgid "Precise wall"
-msgstr "Exakte Wand"
+msgid "Precise wall(experimental)"
+msgstr "Exakte Wand (experimentell)"
 
 msgid ""
 "Improve shell precision by adjusting outer wall spacing. This also improves "
@@ -9172,7 +9047,7 @@ msgid ""
 "value. This can be useful to not let the 'one perimeter on top' trigger on "
 "surface that should be covered only by perimeters. This value can be a mm or "
 "a % of the perimeter extrusion width.\n"
-"Warning: If enabled, artifacts can be created if you have some thin features "
+"Warning: If enabled, artifacts can be created is you have some thin features "
 "on the next layer, like letters. Set this setting to 0 to remove these "
 "artifacts."
 msgstr ""
@@ -9405,15 +9280,6 @@ msgstr "Nach Ebene"
 msgid "By object"
 msgstr "Nach Objekt"
 
-msgid "Intra-layer order"
-msgstr ""
-
-msgid "Print order within a single layer"
-msgstr ""
-
-msgid "As object list"
-msgstr ""
-
 msgid "Slow printing down for better layer cooling"
 msgstr "Verlangsamen Sie den Druck für eine bessere Schichtkühlung"
 
@@ -9520,74 +9386,6 @@ msgstr ""
 "wird normalerweise empfohlen, diese Funktion zu aktivieren. Wenn Sie jedoch "
 "große Düsen verwenden, sollten Sie diese Funktion deaktivieren."
 
-msgid "Don't filter out small internal bridges (beta)"
-msgstr "Kleine interne Brücken nicht herausfiltern (experimentell)"
-
-msgid ""
-"This option can help reducing pillowing on top surfaces in heavily slanted "
-"or curved models.\n"
-"\n"
-"By default, small internal bridges are filtered out and the internal solid "
-"infill is printed directly over the sparse infill. This works well in most "
-"cases, speeding up printing without too much compromise on top surface "
-"quality. \n"
-"\n"
-"However, in heavily slanted or curved models especially where too low sparse "
-"infill density is used, this may result in curling of the unsupported solid "
-"infill, causing pillowing.\n"
-"\n"
-"Enabling this option will print internal bridge layer over slightly "
-"unsupported internal solid infill. The options below control the amount of "
-"filtering, i.e. the amount of internal bridges created.\n"
-"\n"
-"Disabled - Disables this option. This is the default behaviour and works "
-"well in most cases.\n"
-"\n"
-"Limited filtering - Creates internal bridges on heavily slanted surfaces, "
-"while avoiding creating uncessesary interal bridges. This works well for "
-"most difficult models.\n"
-"\n"
-"No filtering - Creates internal bridges on every potential internal "
-"overhang. This option is useful for heavily slanted top surface models. "
-"However, in most cases it creates too many unecessary bridges."
-msgstr ""
-"Diese Option kann dazu beitragen, das Polstern auf Oberflächen mit stark "
-"geneigten oder gekrümmten Modellen zu reduzieren.\n"
-"\n"
-"Standardmäßig werden kleine interne Brücken herausgefiltert und das interne "
-"massive Infill wird direkt über dem dünnen Infill gedruckt. Dies "
-"funktioniert in den meisten Fällen gut und beschleunigt den Druck ohne zu "
-"große Kompromisse bei der Qualität der Oberfläche.\n"
-"\n"
-"In stark geneigten oder gekrümmten Modellen, insbesondere bei zu geringer "
-"Dichte des dünnen Infill, kann dies jedoch zu einer Krümmung des "
-"ununterstützten massiven Infill führen, was zu Polstern führt.\n"
-"\n"
-"Wenn Sie diese Option aktivieren, wird die interne Brückenschicht über dem "
-"leicht ununterstützten internen massiven Infill gedruckt. Die folgenden "
-"Optionen steuern die Menge der Filterung, d.h. die Menge der erstellten "
-"internen Brücken.\n"
-"\n"
-"Deaktiviert - Deaktiviert diese Option. Dies ist das Standardverhalten und "
-"funktioniert in den meisten Fällen gut.\n"
-"\n"
-"Begrenzte Filterung - Erstellt interne Brücken auf stark geneigten Flächen, "
-"vermeidet jedoch die Erstellung von unnötigen internen Brücken. Dies "
-"funktioniert gut für die meisten schwierigen Modelle.\n"
-"\n"
-"Keine Filterung - Erstellt interne Brücken auf jedem potenziellen internen "
-"Überhang. Diese Option ist für stark geneigte Oberflächenmodelle nützlich. "
-"In den meisten Fällen werden jedoch zu viele unnötige Brücken erstellt."
-
-msgid "Disabled"
-msgstr "Deaktiviert"
-
-msgid "Limited filtering"
-msgstr "Begrenzte Filterung"
-
-msgid "No filtering"
-msgstr "Keine Filterung"
-
 msgid "Max bridge length"
 msgstr "Max Überbrückungslänge"
 
@@ -9628,25 +9426,6 @@ msgid ""
 msgstr ""
 "In der Nähe von schrägen Flächen massive Füllungen hinzufügen, um die "
 "vertikale Wanddicke zu gewährleisten (obere + untere massive Schichten)."
-
-msgid "Further reduce solid infill on walls (beta)"
-msgstr "Weitere Reduzierung des festen Infill an den Wänden (experimentell)"
-
-msgid ""
-"Further reduces any solid infill applied to walls. As there will be very "
-"limited infill supporting solid surfaces, make sure that you are using "
-"adequate number of walls to support the part on sloping surfaces.\n"
-"\n"
-"For heavily sloped surfaces this option is not suitable as it will generate "
-"too thin of a top layer and should be disabled."
-msgstr ""
-"Reduziert das feste Infill an den Wänden weiter. Da nur sehr wenig Infill "
-"zur Unterstützung der massiven Oberflächen verwendet wird, stellen Sie "
-"sicher, dass Sie eine ausreichende Anzahl von Wänden verwenden, um das Teil "
-"auf schrägen Oberflächen zu stützen.\n"
-"\n"
-"Für stark geneigte Oberflächen ist diese Option nicht geeignet, da sie eine "
-"zu dünne obere Schicht erzeugt und deaktiviert werden sollte."
 
 msgid "Top surface pattern"
 msgstr "Muster der Oberfläche"
@@ -10459,13 +10238,13 @@ msgstr "Volle Lüfterdrehzahl ab Schicht"
 
 msgid ""
 "Fan speed will be ramped up linearly from zero at layer "
-"\"close_fan_the_first_x_layers\" to maximum at layer \"full_fan_speed_layer"
-"\". \"full_fan_speed_layer\" will be ignored if lower than "
-"\"close_fan_the_first_x_layers\", in which case the fan will be running at "
-"maximum allowed speed at layer \"close_fan_the_first_x_layers\" + 1."
+"\"close_fan_the_first_x_layers\" to maximum at layer "
+"\"full_fan_speed_layer\". \"full_fan_speed_layer\" will be ignored if lower "
+"than \"close_fan_the_first_x_layers\", in which case the fan will be running "
+"at maximum allowed speed at layer \"close_fan_the_first_x_layers\" + 1."
 msgstr ""
-"Die Lüftergeschwindigkeit wird linear von Null bei der Schicht"
-"\"close_fan_the_first_x_layers\" auf das Maximum bei der Schicht "
+"Die Lüftergeschwindigkeit wird linear von Null bei der "
+"Schicht\"close_fan_the_first_x_layers\" auf das Maximum bei der Schicht "
 "\"full_fan_speed_layer\" erhöht. \"full_fan_speed_layer\" wird ignoriert, "
 "wenn es niedriger ist als \"close_fan_the_first_x_layers\",in diesem Fall "
 "läuft der Lüfter bei Schicht \"close_fan_the_first_x_layers\"+ 1 mit maximal "
@@ -10719,13 +10498,6 @@ msgstr "Mit welcher Art von G-Code ist der Drucker kompatibel"
 msgid "Klipper"
 msgstr "Klipper"
 
-msgid "Support multi bed types"
-msgstr "Unterstützung mehrerer Betttypen"
-
-msgid "Enable this option if you want to use multiple bed types"
-msgstr ""
-"Aktivieren Sie diese Option, wenn Sie mehrere Betttypen verwenden möchten"
-
 msgid "Label objects"
 msgstr "Objekte beschriften"
 
@@ -10903,7 +10675,7 @@ msgstr ""
 "Beschleunigung zum Drucken verwendet"
 
 msgid "Emit limits to G-code"
-msgstr "Werte im G-Code ausgeben"
+msgstr ""
 
 msgid "Machine limits"
 msgstr "Maschinengrenzen"
@@ -10912,9 +10684,6 @@ msgid ""
 "If enabled, the machine limits will be emitted to G-code file.\n"
 "This option will be ignored if the g-code flavor is set to Klipper."
 msgstr ""
-"Wenn diese Option aktiviert ist, werden die Maschinengrenzen in die G-Code-"
-"Datei ausgegeben.\n"
-"Diese Option wird ignoriert, wenn der G-Code-Typ auf Klipper eingestellt ist."
 
 msgid ""
 "This G-code will be used as a code for the pause print. User can insert "
@@ -10925,22 +10694,6 @@ msgstr ""
 
 msgid "This G-code will be used as a custom code"
 msgstr "Dieser G-Code wird als benutzerdefinierter Code verwendet"
-
-msgid "Enable Flow Compensation"
-msgstr ""
-
-msgid "Enable flow compensation for small infill areas"
-msgstr ""
-
-msgid "Flow Compensation Model"
-msgstr ""
-
-msgid ""
-"Flow Compensation Model, used to adjust the flow for small infill areas. The "
-"model is expressed as a comma separated pair of values for extrusion length "
-"and flow correction factors, one per line, in the following format: "
-"\"1.234,5.678\""
-msgstr ""
 
 msgid "Maximum speed X"
 msgstr "Maximale Geschwindigkeit X"
@@ -11282,6 +11035,9 @@ msgstr ""
 "bei komplexeren Modellen verkürzen und Druckzeit sparen, verlangsamt aber "
 "das Slicen und die G-Code Generierung."
 
+msgid "Enable"
+msgstr "Aktivieren"
+
 msgid "Filename format"
 msgstr "Format des Dateinamens"
 
@@ -11347,7 +11103,7 @@ msgid "Number of walls of every layer"
 msgstr "Anzahl der Wände jeder Schicht"
 
 msgid "Alternate extra wall"
-msgstr "Abwechselnde zusätzliche Wand"
+msgstr ""
 
 msgid ""
 "This setting adds an extra wall to every other layer. This way the infill "
@@ -11359,16 +11115,6 @@ msgid ""
 "Using lightning infill together with this option is not recommended as there "
 "is limited infill to anchor the extra perimeters to."
 msgstr ""
-"Diese Einstellung fügt jeder zweiten Schicht eine zusätzliche Wand hinzu. "
-"Damit wird die Füllung vertikal zwischen den Wänden eingeklemmt, was zu "
-"stärkeren Drucken führt. \n"
-"\n"
-"Wenn diese Option aktiviert ist, muss die Option zur Sicherstellung der "
-"vertikalen Schalendicke deaktiviert werden. \n"
-"\n"
-"Die Verwendung von Lightning Infill zusammen mit dieser Option wird nicht "
-"empfohlen, da die Füllung begrenzt ist, um die zusätzlichen Umfänge zu "
-"verankern."
 
 msgid ""
 "If you want to process the output G-code through custom scripts, just list "
@@ -11617,6 +11363,9 @@ msgstr "Nächste"
 msgid "Aligned"
 msgstr "Ausgerichtet"
 
+msgid "Back"
+msgstr "Rückseite"
+
 msgid "Random"
 msgstr "Zufall"
 
@@ -11673,7 +11422,7 @@ msgstr ""
 "innen ausgeführt."
 
 msgid "Wipe before external loop"
-msgstr "Wischbewegung vor äußerer Schleife"
+msgstr ""
 
 msgid ""
 "To minimise visibility of potential overextrusion at the start of an "
@@ -11686,15 +11435,6 @@ msgid ""
 "print order as in these modes it is more likely an external perimeter is "
 "printed immediately after a deretraction move."
 msgstr ""
-"Um die Sichtbarkeit einer möglichen Überextrusion am Anfang eines äußeren "
-"Umfangs zu minimieren, wenn mit der Druckreihenfolge \"Außen/Innen\" oder "
-"\"Innen/Außen/Innen\" gedruckt wird, wird der Rückzug etwas nach innen vom "
-"Anfang des äußeren Umfangs ausgeführt. Auf diese Weise wird eine mögliche "
-"Überextrusion von der Außenfläche verdeckt. \n"
-"\n"
-"Dies ist nützlich, wenn mit der Druckreihenfolge \"Außen/Innen\" oder "
-"\"Innen/Außen/Innen\" gedruckt wird, da in diesen Modi ein äußerer Umfang "
-"unmittelbar nach einem Rückzug gedruckt wird."
 
 msgid "Wipe speed"
 msgstr "Wipe Geschwindigkeit"
@@ -12678,11 +12418,6 @@ msgid ""
 "Wipe tower is only compatible with relative mode. It is recommended on most "
 "printers. Default is checked"
 msgstr ""
-"Relative Extrusion wird empfohlen, wenn die Option \"label_objects\" "
-"verwendet wird. Einige Extruder arbeiten besser mit dieser Option "
-"deaktiviert (absoluter Extrusionsmodus). Der Reinigungsturm ist nur mit dem "
-"relativen Modus kompatibel. Es wird auf den meisten Druckern empfohlen. "
-"Standardmäßig ist es aktiviert."
 
 msgid ""
 "Classic wall generator produces walls with constant extrusion width and for "
@@ -12774,31 +12509,6 @@ msgstr ""
 "sind, werden nicht gedruckt, während Features, die dicker als die "
 "Mindestfeaturegröße sind, auf die Mindestwandbreite verbreitert werden. "
 "Bezogen als Prozentsatz auf Düsendurchmesser."
-
-msgid "Minimum wall length"
-msgstr "Minimale Wandlänge"
-
-msgid ""
-"Adjust this value to prevent short, unclosed walls from being printed, which "
-"could increase print time. Higher values remove more and longer walls.\n"
-"\n"
-"NOTE: Bottom and top surfaces will not be affected by this value to prevent "
-"visual gaps on the ouside of the model. Adjust 'One wall threshold' in the "
-"Advanced settings below to adjust the sensitivity of what is considered a "
-"top-surface. 'One wall threshold' is only visibile if this setting is set "
-"above the default value of 0.5, or if single-wall top surfaces is enabled."
-msgstr ""
-"Passen Sie diesen Wert an, um zu verhindern, dass kurze, offene Wände "
-"gedruckt werden, was die Druckzeit erhöhen könnte. Höhere Werte entfernen "
-"mehr und längere Wände.\n"
-"\n"
-"HINWEIS: Die unteren und oberen Oberflächen werden von diesem Wert nicht "
-"beeinflusst, um visuelle Lücken an der Außenseite des Modells zu vermeiden. "
-"Passen Sie die \"One wall threshold\" in den erweiterten Einstellungen unten "
-"an, um die Empfindlichkeit dessen anzupassen, was als obere Oberfläche "
-"angesehen wird. \"One wall threshold\" ist nur sichtbar, wenn diese "
-"Einstellung über den Standardwert von 0,5 gesetzt ist oder wenn einzelne "
-"Wände für die Oberfläche aktiviert sind."
 
 msgid "First layer minimum wall width"
 msgstr "Erste Schicht minimale Wandbreite"
@@ -12906,242 +12616,6 @@ msgstr "Lade benutzerdefinierten G-Code"
 
 msgid "Load custom gcode from json"
 msgstr "Lade benutzerdefinierten G-Code aus json"
-
-msgid "Current z-hop"
-msgstr ""
-
-msgid "Contains z-hop present at the beginning of the custom G-code block."
-msgstr ""
-
-msgid ""
-"Position of the extruder at the beginning of the custom G-code block. If the "
-"custom G-code travels somewhere else, it should write to this variable so "
-"PrusaSlicer knows where it travels from when it gets control back."
-msgstr ""
-
-msgid ""
-"Retraction state at the beginning of the custom G-code block. If the custom "
-"G-code moves the extruder axis, it should write to this variable so "
-"PrusaSlicer deretracts correctly when it gets control back."
-msgstr ""
-
-msgid "Extra deretraction"
-msgstr ""
-
-msgid "Currently planned extra extruder priming after deretraction."
-msgstr ""
-
-msgid "Current extruder"
-msgstr ""
-
-msgid "Zero-based index of currently used extruder."
-msgstr ""
-
-msgid "Current object index"
-msgstr ""
-
-msgid ""
-"Specific for sequential printing. Zero-based index of currently printed "
-"object."
-msgstr ""
-
-msgid "Has wipe tower"
-msgstr ""
-
-msgid "Whether or not wipe tower is being generated in the print."
-msgstr ""
-
-msgid "Initial extruder"
-msgstr ""
-
-msgid ""
-"Zero-based index of the first extruder used in the print. Same as "
-"initial_tool."
-msgstr ""
-
-msgid "Initial tool"
-msgstr ""
-
-msgid ""
-"Zero-based index of the first extruder used in the print. Same as "
-"initial_extruder."
-msgstr ""
-
-msgid "Is extruder used?"
-msgstr ""
-
-msgid "Vector of bools stating whether a given extruder is used in the print."
-msgstr ""
-
-msgid "Volume per extruder"
-msgstr ""
-
-msgid "Total filament volume extruded per extruder during the entire print."
-msgstr ""
-
-msgid "Total toolchanges"
-msgstr ""
-
-msgid "Number of toolchanges during the print."
-msgstr ""
-
-msgid "Total volume"
-msgstr ""
-
-msgid "Total volume of filament used during the entire print."
-msgstr ""
-
-msgid "Weight per extruder"
-msgstr ""
-
-msgid ""
-"Weight per extruder extruded during the entire print. Calculated from "
-"filament_density value in Filament Settings."
-msgstr ""
-
-msgid "Total weight"
-msgstr ""
-
-msgid ""
-"Total weight of the print. Calculated from filament_density value in "
-"Filament Settings."
-msgstr ""
-
-msgid "Total layer count"
-msgstr ""
-
-msgid "Number of layers in the entire print."
-msgstr ""
-
-msgid "Number of objects"
-msgstr ""
-
-msgid "Total number of objects in the print."
-msgstr ""
-
-msgid "Number of instances"
-msgstr ""
-
-msgid "Total number of object instances in the print, summed over all objects."
-msgstr ""
-
-msgid "Scale per object"
-msgstr ""
-
-msgid ""
-"Contains a string with the information about what scaling was applied to the "
-"individual objects. Indexing of the objects is zero-based (first object has "
-"index 0).\n"
-"Example: 'x:100% y:50% z:100'."
-msgstr ""
-
-msgid "Input filename without extension"
-msgstr ""
-
-msgid "Source filename of the first object, without extension."
-msgstr ""
-
-msgid ""
-"The vector has two elements: x and y coordinate of the point. Values in mm."
-msgstr ""
-
-msgid ""
-"The vector has two elements: x and y dimension of the bounding box. Values "
-"in mm."
-msgstr ""
-
-msgid "First layer convex hull"
-msgstr ""
-
-msgid ""
-"Vector of points of the first layer convex hull. Each element has the "
-"following format:'[x, y]' (x and y are floating-point numbers in mm)."
-msgstr ""
-
-msgid "Bottom-left corner of first layer bounding box"
-msgstr ""
-
-msgid "Top-right corner of first layer bounding box"
-msgstr ""
-
-msgid "Size of the first layer bounding box"
-msgstr ""
-
-msgid "Bottom-left corner of print bed bounding box"
-msgstr ""
-
-msgid "Top-right corner of print bed bounding box"
-msgstr ""
-
-msgid "Size of the print bed bounding box"
-msgstr ""
-
-msgid "Timestamp"
-msgstr ""
-
-msgid "String containing current time in yyyyMMdd-hhmmss format."
-msgstr ""
-
-msgid "Day"
-msgstr ""
-
-msgid "Hour"
-msgstr ""
-
-msgid "Minute"
-msgstr ""
-
-msgid "Print preset name"
-msgstr ""
-
-msgid "Name of the print preset used for slicing."
-msgstr ""
-
-msgid "Filament preset name"
-msgstr ""
-
-msgid ""
-"Names of the filament presets used for slicing. The variable is a vector "
-"containing one name for each extruder."
-msgstr ""
-
-msgid "Printer preset name"
-msgstr ""
-
-msgid "Name of the printer preset used for slicing."
-msgstr ""
-
-msgid "Physical printer name"
-msgstr ""
-
-msgid "Name of the physical printer used for slicing."
-msgstr ""
-
-msgid "Layer number"
-msgstr ""
-
-msgid "Index of the current layer. One-based (i.e. first layer is number 1)."
-msgstr ""
-
-msgid "Layer z"
-msgstr ""
-
-msgid ""
-"Height of the current layer above the print bed, measured to the top of the "
-"layer."
-msgstr ""
-
-msgid "Maximal layer z"
-msgstr ""
-
-msgid "Height of the last layer above the print bed."
-msgstr ""
-
-msgid "Filament extruder ID"
-msgstr ""
-
-msgid "The current extruder ID. The same as current_extruder."
-msgstr ""
 
 msgid "Error in zip archive"
 msgstr "Fehler im Zip-Archiv"
@@ -13895,7 +13369,7 @@ msgstr "Filamenttyp"
 msgid "Start temp: "
 msgstr "Starttemperatur"
 
-msgid "End temp: "
+msgid "End end: "
 msgstr "Endtemperatur"
 
 msgid "Temp step: "
@@ -14217,7 +13691,7 @@ msgstr ""
 "bestehen aus Leerzeichen. Bitte erneut eingeben."
 
 msgid "The vendor can not be a number. Please re-enter."
-msgstr "Der Hersteller kann keine Zahl sein. Bitte erneut eingeben."
+msgstr ""
 
 msgid ""
 "You have not selected a printer or preset yet. Please select at least one."
@@ -14238,13 +13712,13 @@ msgstr ""
 "Möchten Sie es überschreiben?"
 
 msgid ""
-"We would rename the presets as \"Vendor Type Serial @printer you selected"
-"\". \n"
-"To add preset for more printers, Please go to printer selection"
+"We would rename the presets as \"Vendor Type Serial @printer you "
+"selected\". \n"
+"To add preset for more prinetrs, Please go to printer selection"
 msgstr ""
-"Wir würden die Voreinstellungen als \"Hersteller Typ Seriennummer @Drucker, "
+"Wir würden die Voreinstellungen als \"Hersteller Typ Seriennummer @Drucker "
 "den Sie ausgewählt haben\" umbenennen. \n"
-"Um Voreinstellungen für weitere Drucker hinzuzufügen, gehen Sie bitte zur "
+"Um Voreinstellungen für mehr Drucker hinzuzufügen, gehen Sie bitte zur "
 "Druckerauswahl"
 
 msgid "Create Printer/Nozzle"
@@ -14630,9 +14104,6 @@ msgstr "Voreinstellung vom Filament kopieren"
 msgid "The filament choice not find filament preset, please reselect it"
 msgstr ""
 "Die Filamentauswahl findet keine Filamentvoreinstellung, bitte neu auswählen"
-
-msgid "[Delete Required]"
-msgstr ""
 
 msgid "Edit Preset"
 msgstr "Voreinstellung bearbeiten"
@@ -15234,24 +14705,6 @@ msgstr ""
 "wie z.B. ABS, durch eine entsprechende Erhöhung der Heizbetttemperatur die "
 "Wahrscheinlichkeit von Verwerfungen verringert werden kann."
 
-#~ msgid ""
-#~ "We would rename the presets as \"Vendor Type Serial @printer you selected"
-#~ "\". \n"
-#~ "To add preset for more prinetrs, Please go to printer selection"
-#~ msgstr ""
-#~ "Wir würden die Voreinstellungen als \"Hersteller Typ Seriennummer "
-#~ "@Drucker den Sie ausgewählt haben\" umbenennen. \n"
-#~ "Um Voreinstellungen für mehr Drucker hinzuzufügen, gehen Sie bitte zur "
-#~ "Druckerauswahl"
-
-#~ msgid "The Config can not be loaded."
-#~ msgstr "Die Konfiguration kann nicht geladen werden."
-
-#~ msgid "The 3mf is generated by old Orca Slicer, load geometry data only."
-#~ msgstr ""
-#~ "Die 3mf wurde mit einer alten Version von OrcaSlicer generiert, lade nur "
-#~ "die Geometriedaten."
-
 #~ msgid "wiki"
 #~ msgstr "wiki"
 
@@ -15428,6 +14881,9 @@ msgstr ""
 #~ "Möchten Sie Ihre Software aktualisieren, um alle Funktionen in dieser "
 #~ "Slicer-Datei zu aktivieren?\n"
 
+#~ msgid "Newer 3mf version"
+#~ msgstr "Neuere 3mf-Version"
+
 #, c-format, boost-format
 #~ msgid ""
 #~ "This slicer file version %s is newer than %s's version.\n"
@@ -15499,6 +14955,25 @@ msgstr ""
 
 #~ msgid "Export all objects as STL"
 #~ msgstr "Alle Objekte als STL exportieren"
+
+#, c-format, boost-format
+#~ msgid ""
+#~ "The 3mf's version %s is newer than %s's version %s, Found following keys "
+#~ "unrecognized:"
+#~ msgstr ""
+#~ "Die Version %s von 3mf ist neuer als die Version %s von %s, folgende "
+#~ "Schlüssel wurden nicht erkannt:"
+
+#~ msgid "You'd better upgrade your software.\n"
+#~ msgstr "Sie sollten Ihre Software aktualisieren.\n"
+
+#, c-format, boost-format
+#~ msgid ""
+#~ "The 3mf's version %s is newer than %s's version %s, Suggest to upgrade "
+#~ "your software."
+#~ msgstr ""
+#~ "Die Version %s der 3mf ist neuer als die Version %s %s. Bitte Ihre "
+#~ "Software aktualisieren."
 
 #~ msgid "The 3mf is not compatible, load geometry data only!"
 #~ msgstr "Der 3mf ist nicht kompatibel, lade nur die Geometriedaten!"

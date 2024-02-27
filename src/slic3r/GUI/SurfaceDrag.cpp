@@ -198,20 +198,15 @@ std::optional<float> calc_distance(const GLVolume &gl_volume, RaycastManager &ra
     if (volume->is_the_only_one_part())
         return {};
 
-    if (!volume->emboss_shape.has_value())
-        return {};
-        
     RaycastManager::AllowVolumes condition = create_condition(object->volumes, volume->id());
     RaycastManager::Meshes meshes = create_meshes(canvas, condition);
     raycaster.actualize(*instance, &condition, &meshes);
-    return calc_distance(gl_volume, raycaster, &condition, volume->emboss_shape->fix_3mf_tr);
+    return calc_distance(gl_volume, raycaster, &condition);
 }
 
-std::optional<float> calc_distance(const GLVolume &gl_volume, const RaycastManager &raycaster, 
-    const RaycastManager::ISkip *condition, const std::optional<Slic3r::Transform3d>& fix) {
+std::optional<float> calc_distance(const GLVolume &gl_volume, const RaycastManager &raycaster, const RaycastManager::ISkip *condition)
+{
     Transform3d w = gl_volume.world_matrix();
-    if (fix.has_value())
-        w = w * fix->inverse();
     Vec3d p = w.translation();
     Vec3d dir = -get_z_base(w);
     auto hit_opt = raycaster.closest_hit(p, dir, condition);
@@ -327,11 +322,11 @@ bool face_selected_volume_to_camera(const Camera &camera, GLCanvas3D &canvas, co
         return false;
     ModelObject &object = *object_ptr;
 
-    const ModelInstance *instance_ptr = get_model_instance(gl_volume, object);
+    ModelInstance *instance_ptr = get_model_instance(gl_volume, object);
     assert(instance_ptr != nullptr);
     if (instance_ptr == nullptr)
         return false;
-    const ModelInstance &instance = *instance_ptr;
+    ModelInstance &instance = *instance_ptr;
 
     ModelVolume *volume_ptr = get_model_volume(gl_volume, object);
     assert(volume_ptr != nullptr);
@@ -390,7 +385,10 @@ bool face_selected_volume_to_camera(const Camera &camera, GLCanvas3D &canvas, co
     return true;
 }
 
-void do_local_z_rotate(Selection &selection, double relative_angle) {
+void do_local_z_rotate(GLCanvas3D &canvas, double relative_angle)
+{
+    Selection &selection = canvas.get_selection();
+
     assert(!selection.is_empty());
     if(selection.is_empty()) return;
 
@@ -420,9 +418,17 @@ void do_local_z_rotate(Selection &selection, double relative_angle) {
         selection.rotate(Vec3d(0., 0., relative_angle), get_drag_transformation_type(selection));
     };
     selection_transform(selection, selection_rotate_fnc);
+
+    std::string snapshot_name; // empty meand no store undo / redo
+    // NOTE: it use L instead of _L macro because prefix _ is appended
+    // inside function do_move
+    // snapshot_name = L("Set text rotation");
+    canvas.do_rotate(snapshot_name);
 }
 
-void do_local_z_move(Selection &selection, double relative_move) {
+void do_local_z_move(GLCanvas3D &canvas, double relative_move) {
+    
+    Selection &selection = canvas.get_selection();
     assert(!selection.is_empty());
     if (selection.is_empty()) return;
 
@@ -432,6 +438,12 @@ void do_local_z_move(Selection &selection, double relative_move) {
         selection.translate(translate, TransformationType::Local);
     };
     selection_transform(selection, selection_translate_fnc);
+
+    std::string snapshot_name; // empty mean no store undo / redo
+    // NOTE: it use L instead of _L macro because prefix _ is appended inside
+    // function do_move
+    // snapshot_name = L("Set surface distance");
+    canvas.do_move(snapshot_name);
 }
 
 TransformationType get_drag_transformation_type(const Selection &selection)
@@ -577,7 +589,7 @@ bool start_dragging(const Vec2d                &mouse_pos,
 
     std::optional<float> start_distance;
     if (!volume->emboss_shape->projection.use_surface)
-        start_distance = calc_distance(gl_volume, raycast_manager, &condition, volume->emboss_shape->fix_3mf_tr);
+        start_distance = calc_distance(gl_volume, raycast_manager, &condition);
     surface_drag = SurfaceDrag{mouse_offset,   world_tr,  instance_tr_inv,
                                gl_volume_ptr,  condition, start_angle,
                                start_distance, true,      mouse_offset_without_sla_shift};

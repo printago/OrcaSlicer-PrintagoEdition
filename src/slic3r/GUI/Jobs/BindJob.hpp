@@ -17,13 +17,12 @@ class BindJob : public Job
     std::string         m_dev_id;
     std::string         m_dev_ip;
     std::string         m_sec_link;
-    std::string         m_ssdp_version;
     bool                m_job_finished{ false };
     int                 m_print_job_completed_id = 0;
     bool                m_improved{false};
 
 public:
-    BindJob(std::string dev_id, std::string dev_ip, std::string sec_link, std::string ssdp_version);
+    BindJob(std::string dev_id, std::string dev_ip, std::string sec_link);
 
     int  status_range() const
     {

@@ -24,7 +24,6 @@
 #include "wx/fs_mem.h"
 #include "wx/stdpaths.h"
 #include <wx/frame.h>
-#include "wx/timer.h"
 #include <wx/tbarbase.h>
 #include "wx/textctrl.h"
 

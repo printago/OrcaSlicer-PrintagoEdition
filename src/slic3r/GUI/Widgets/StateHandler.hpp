@@ -1,7 +1,6 @@
 #ifndef slic3r_GUI_StateHandler_hpp_
 #define slic3r_GUI_StateHandler_hpp_
 
-#include <memory>
 #include <wx/event.h>
 
 #include "StateColor.hpp"

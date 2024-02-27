@@ -3,7 +3,6 @@
 #include "MsgDialog.hpp"
 #include "libslic3r/Preset.hpp"
 #include "I18N.hpp"
-#include <boost/log/trivial.hpp>
 #include <wx/dcgraph.h>
 
 namespace Slic3r { namespace GUI {

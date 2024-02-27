@@ -1,7 +1,6 @@
 #include "TabButton.hpp"
 #include "Widgets/Label.hpp"
 
-#include <wx/dcclient.h>
 #include <wx/dcgraph.h>
 
 BEGIN_EVENT_TABLE(TabButton, StaticBox)

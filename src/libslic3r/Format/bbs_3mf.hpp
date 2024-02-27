@@ -8,7 +8,6 @@
 
 namespace Slic3r {
 class Model;
-class ModelObject;
 struct ConfigSubstitutionContext;
 class DynamicPrintConfig;
 class Preset;

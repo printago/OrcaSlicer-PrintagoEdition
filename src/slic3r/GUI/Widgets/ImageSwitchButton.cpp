@@ -3,7 +3,6 @@
 #include "StaticBox.hpp"
 #include "../wxExtensions.hpp"
 
-#include <wx/dcclient.h>
 #include <wx/dcgraph.h>
 
 BEGIN_EVENT_TABLE(ImageSwitchButton, StaticBox)

@@ -1,5 +1,4 @@
 #include "StateHandler.hpp"
-#include <wx/window.h>
 
 wxDEFINE_EVENT(EVT_ENABLE_CHANGED, wxCommandEvent);
 
@@ -72,7 +71,7 @@ void StateHandler::update_binds()
 
 void StateHandler::set_state(int state, int mask)
 {
-    if ((states_ & mask) == (state & mask)) return;
+    if (states_ & mask == state & mask) return;
     int old = states_;
     states_ = states_ & ~mask | state & mask;
     if (old != states_ && (old | states2_) != (states_ | states2_)) {

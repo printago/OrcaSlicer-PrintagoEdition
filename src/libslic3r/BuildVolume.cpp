@@ -1,6 +1,5 @@
 #include "BuildVolume.hpp"
 #include "ClipperUtils.hpp"
-#include "TriangleMesh.hpp"
 #include "Geometry/ConvexHull.hpp"
 #include "GCode/GCodeProcessor.hpp"
 #include "Point.hpp"

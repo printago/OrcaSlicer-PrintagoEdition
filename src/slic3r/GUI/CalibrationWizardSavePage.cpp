@@ -261,9 +261,11 @@ void CaliPASaveAutoPanel::sync_cali_result(const std::vector<PACalibResult>& cal
         static std::vector<PACalibResult> filtered_results;
         filtered_results.clear();
         for (auto history : history_result) {
-            if (history.filament_id == item.filament_id) {
-                filtered_results.push_back(history);
-                selections.push_back(from_u8(history.name));
+            for (auto& info : m_obj->selected_cali_preset) {
+                if (history.filament_id == info.filament_id) {
+                    filtered_results.push_back(history);
+                    selections.push_back(from_u8(history.name));
+                }
             }
         }
         comboBox_tray_name->Set(selections);

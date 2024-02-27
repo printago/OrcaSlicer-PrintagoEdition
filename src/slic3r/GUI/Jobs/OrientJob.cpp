@@ -238,7 +238,6 @@ orientation::OrientMesh OrientJob::get_orient_mesh(ModelInstance* instance)
 
     om.setter = [instance](const OrientMesh& p) {
         instance->rotate(p.rotation_matrix);
-        instance->get_object()->invalidate_bounding_box();
         instance->get_object()->ensure_on_bed();
     };
     return om;

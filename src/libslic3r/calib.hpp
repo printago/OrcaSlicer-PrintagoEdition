@@ -187,7 +187,7 @@ protected:
 class CalibPressureAdvanceLine : public CalibPressureAdvance
 {
 public:
-    CalibPressureAdvanceLine(GCode* gcodegen);
+    CalibPressureAdvanceLine(GCode *gcodegen) : CalibPressureAdvance(gcodegen->config()), mp_gcodegen(gcodegen),m_nozzle_diameter(gcodegen->config().nozzle_diameter.get_at(0)){};
     ~CalibPressureAdvanceLine(){};
 
     std::string generate_test(double start_pa = 0, double step_pa = 0.002, int count = 50);
@@ -199,7 +199,6 @@ public:
     }
 
     const double &line_width() { return m_line_width; };
-    const double &height_layer() { return m_height_layer; };
     bool          is_delta() const;
     bool         &draw_numbers() { return m_draw_numbers; }
 
@@ -213,10 +212,10 @@ private:
     double m_nozzle_diameter;
     double m_slow_speed, m_fast_speed;
 
-    double m_height_layer{0.2};
-    double m_line_width{0.6};
-    double m_thin_line_width{0.44};
-    double m_number_line_width{0.48};
+    const double m_height_layer{0.2};
+    const double m_line_width{0.6};
+    const double m_thin_line_width{0.44};
+    const double m_number_line_width{0.48};
     const double m_space_y{3.5};
 
     double m_length_short{20.0}, m_length_long{40.0};

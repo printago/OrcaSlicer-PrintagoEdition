@@ -287,7 +287,6 @@ protected:
     ScalableBitmap m_bitmap_timelapse_off;
     ScalableBitmap m_bitmap_vcamera_on;
     ScalableBitmap m_bitmap_vcamera_off;
-    ScalableBitmap m_bitmap_switch_camera;
 
     /* title panel */
     wxPanel *       media_ctrl_panel;
@@ -308,7 +307,6 @@ protected:
     wxStaticBitmap *m_bitmap_sdcard_img;
     wxStaticBitmap *m_bitmap_static_use_time;
     wxStaticBitmap *m_bitmap_static_use_weight;
-    wxStaticBitmap* m_camera_switch_button;
 
 
     wxMediaCtrl2 *  m_media_ctrl;
@@ -328,7 +326,6 @@ protected:
     ScalableButton *m_button_pause_resume;
     ScalableButton *m_button_abort;
     Button *        m_button_clean;
-    wxWebView *     m_custom_camera_view{nullptr};
 
     wxStaticText *  m_text_tasklist_caption;
 
@@ -413,13 +410,6 @@ protected:
     virtual void on_axis_ctrl_z_down_10(wxCommandEvent &event) { event.Skip(); }
     virtual void on_axis_ctrl_e_up_10(wxCommandEvent &event) { event.Skip(); }
     virtual void on_axis_ctrl_e_down_10(wxCommandEvent &event) { event.Skip(); }
-    void on_camera_source_change(wxCommandEvent& event);
-    void handle_camera_source_change();
-    void remove_controls();
-    void on_webview_navigating(wxWebViewEvent& evt);
-    void on_camera_switch_toggled(wxMouseEvent& event);
-    void toggle_custom_camera();
-    void toggle_builtin_camera();
 
 public:
     StatusBasePanel(wxWindow *      parent,

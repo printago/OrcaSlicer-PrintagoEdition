@@ -1,10 +1,7 @@
 #ifndef slic3r_GUI_SpinInput_hpp_
 #define slic3r_GUI_SpinInput_hpp_
 
-#include <wx/dcclient.h>
-#include <wx/timer.h>
 #include <wx/textctrl.h>
-#include <wx/valtext.h>
 #include "StaticBox.hpp"
 
 class Button;
