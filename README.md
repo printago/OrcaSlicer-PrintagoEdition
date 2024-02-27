@@ -1,8 +1,8 @@
-[![Build all](https://github.com/SoftFever/OrcaSlicer/actions/workflows/build_all.yml/badge.svg?branch=main)](https://github.com/SoftFever/OrcaSlicer/actions/workflows/build_all.yml)
-# Orca Slicer     
+[![Build all](https://github.com/printago/OrcaSlicer-PrintagoEdition/actions/workflows/build_all.yml/badge.svg?branch=main)](https://github.com/printago/OrcaSlicer-PrintagoEdition/actions/workflows/build_all.yml)
+# Orca Slicer - Printago Edition
 Orca Slicer is an open source slicer for FDM printers.   
-You can download Orca Slicer here: [github releases page](https://github.com/SoftFever/OrcaSlicer/releases/).  
-![discord-mark-blue](https://github.com/SoftFever/OrcaSlicer/assets/103989404/b97d5ffc-072d-4d0a-bbda-e67ef373876f) Join community: [OrcaSlicer Official Discord Server](https://discord.gg/P4VE9UY9gJ)   
+
+![discord-mark-blue](https://github.com/printago/OrcaSlicer-PrintagoEdition/assets/103989404/b97d5ffc-072d-4d0a-bbda-e67ef373876f) Join community: [Printago Official Discord Server](https://discord.gg/RCFA2u99De)   
 
 # Main features
 - Auto calibrations for all printers
@@ -13,12 +13,17 @@ You can download Orca Slicer here: [github releases page](https://github.com/Sof
 - More granular controls
 - More features can be found in [change notes](https://github.com/SoftFever/OrcaSlicer/releases/)  
 
-### Some background
-OrcaSlicer is fork of Bambu Studio  
-It was previously known as BambuStudio-SoftFever  
-Bambu Studio is forked from [PrusaSlicer](https://github.com/prusa3d/PrusaSlicer) by Prusa Research, which is from [Slic3r](https://github.com/Slic3r/Slic3r) by Alessandro Ranellucci and the RepRap community. 
-Orca Slicer incorporates a lot of features from SuperSlicer by @supermerill
-Orca Slicer's logo is designed by community member Justin Levine(@freejstnalxndr)  
+
+# Download
+
+### Stable Release
+📥 **[Download the Latest Stable Release](https://github.com/printago/OrcaSlicer-PrintagoEdition/releases/latest)**  
+Visit our GitHub Releases page for the latest stable version of Orca Slicer, recommended for most users.
+
+### Nightly Builds
+🌙 **[Download the Latest Nightly Build](https://github.com/printago/OrcaSlicer-PrintagoEdition/releases/tag/nightly-builds)**  
+Explore the latest developments in Orca Slicer with our nightly builds. Feedback on these versions is highly appreciated.
+
 
 # How to install
 **Windows**: 
@@ -55,7 +60,7 @@ Orca Slicer's logo is designed by community member Justin Levine(@freejstnalxndr
     
 **Linux(Ubuntu)**:
  1. If you run into trouble to execute it, try this command in terminal:  
-    `chmod +x /path_to_appimage/OrcaSlicer_ubu64.AppImage`
+    `chmod +x /path_to_appimage/OrcaSlicer_Linux.AppImage`
     
 # How to compile
 - Windows 64-bit  
@@ -68,6 +73,14 @@ Orca Slicer's logo is designed by community member Justin Levine(@freejstnalxndr
   - Tools needed: Xcode, Cmake, git, gettext, libtool, automake, autoconf, texinfo
       - You can install most of them by running `brew install cmake gettext libtool automake autoconf texinfo`
   - run `build_release_macos.sh`
+  - To build and debug in XCode:
+      - run `XCode.app`
+      - open ``build_`arch`/OrcaSlicer.xcodeproj``
+      - menu bar: Product => Scheme => OrcaSlicer
+      - menu bar: Product => Scheme => Edit Scheme...
+          - Run => Info tab => Build Configuration: `RelWithDebInfo`
+          - Run => Options tab => Document Versions: uncheck `Allow debugging when browsing versions`
+      - menu bar: Product => Run
 
 - Ubuntu 
   - Dependencies **Will be auto installed with the shell script**: `libmspack-dev libgstreamerd-3-dev libsecret-1-dev libwebkit2gtk-4.0-dev libosmesa6-dev libssl-dev libcurl4-openssl-dev eglexternalplatform-dev libudev-dev libdbus-1-dev extra-cmake-modules libgtk2.0-dev libglew-dev libudev-dev libdbus-1-dev cmake git texinfo`
@@ -113,12 +126,22 @@ Thank you! :)
 </table>
 
 ### Backers:  
-Ko-fi supporters: [Backers list](https://github.com/SoftFever/OrcaSlicer/wiki/OrcaSlicer-backers-%E2%80%90-28-Oct-2023)
+Ko-fi supporters: [Backers list](https://github.com/printago/OrcaSlicer-PrintagoEdition/wiki/OrcaSlicer-backers-%E2%80%90-28-Oct-2023)
 
 Support me  
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/G2G5IP3CP)
 
+## Some background
+OrcaSlicer is originaly forked from Bambu Studio, it was previously known as BambuStudio-SoftFever.
+
+Bambu Studio is forked from [PrusaSlicer](https://github.com/prusa3d/PrusaSlicer) by Prusa Research, which is from [Slic3r](https://github.com/Slic3r/Slic3r) by Alessandro Ranellucci and the RepRap community. 
+Orca Slicer incorporates a lot of features from SuperSlicer by @supermerill
+Orca Slicer's logo is designed by community member Justin Levine(@freejstnalxndr)  
+
+
 # License
+Orca Slicer - Printago Edition is licensed under the GNU Affero General Public License, version 3. Orca Slicer - Printago Edition is based on Orca Slicer by SoftFever.
+
 Orca Slicer is licensed under the GNU Affero General Public License, version 3. Orca Slicer is based on Bambu Studio by BambuLab.
 
 Bambu Studio is licensed under the GNU Affero General Public License, version 3. Bambu Studio is based on PrusaSlicer by PrusaResearch.
