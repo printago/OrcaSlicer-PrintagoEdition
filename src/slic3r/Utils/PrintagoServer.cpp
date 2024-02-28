@@ -944,11 +944,11 @@ void PrintagoDirector::OverridePrintSettings()
     wxString   newProfileName       = printSettingsPath.GetName().ToStdString() + "-printago-" + PBJob::jobId.Right(6);
 
     // Load JSON data from files
-    std::ifstream printSettingsFile(printSettingsPath.GetFullPath());
+    std::ifstream printSettingsFile(printSettingsPath.GetFullPath().ToStdString());
     json          printSettings;
     printSettingsFile >> printSettings;
 
-    std::ifstream printerSettingsFile(printerSettingsPath.GetFullPath());
+    std::ifstream printerSettingsFile(printerSettingsPath.GetFullPath().ToStdString());
     json          printerSettings;
     printerSettingsFile >> printerSettings;
 
@@ -972,7 +972,7 @@ void PrintagoDirector::OverridePrintSettings()
         max_layer_height = nozzle_diameter * 0.75; // Apply the default calculation if max_layer_height is not set
     }
 
-    std::ifstream overrideSettingsFile(overrideSettingsPath.GetFullPath());
+    std::ifstream overrideSettingsFile(overrideSettingsPath.GetFullPath().ToStdString());
     json          overrideSettings;
     overrideSettingsFile >> overrideSettings;
 
@@ -1008,7 +1008,7 @@ void PrintagoDirector::OverridePrintSettings()
     wxFileName newPrintSettingsPath(printSettingsPath);
     newPrintSettingsPath.SetName(newProfileName.ToStdString());
 
-    std::ofstream outFile(newPrintSettingsPath.GetFullPath());
+    std::ofstream outFile(newPrintSettingsPath.GetFullPath().ToStdString());
     outFile << printSettings.dump(2);
 
     PBJob::configFiles["print"] = newPrintSettingsPath;
