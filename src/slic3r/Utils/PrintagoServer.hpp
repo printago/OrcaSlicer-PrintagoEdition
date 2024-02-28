@@ -24,8 +24,8 @@ namespace Slic3r {
 
 static constexpr short PRINTAGO_PORT = 33647;
 
-//    DEV   // static constexpr std::string_view PRINTAGO_TOKEN_ENDPOINT = "https://dev.printago.io/token-validator";                // DEV //
-static constexpr std::string_view PRINTAGO_TOKEN_ENDPOINT = "https://app.printago.io/token-validator"; //PRODUCTION//
+//    DEV   // static constexpr std::string_view PRINTAGO_TOKEN_ENDPOINT = "https://dev.printago.io";                // DEV //
+static constexpr std::string_view PRINTAGO_TOKEN_ENDPOINT = "https://app.printago.io"; //PRODUCTION//
 
 void                   printago_ws_error(beefy::error_code ec, char const* what);
 
