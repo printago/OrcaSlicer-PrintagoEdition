@@ -23,6 +23,10 @@ using tcp           = net::ip::tcp;
 namespace Slic3r {
 
 static constexpr short PRINTAGO_PORT = 33647;
+
+static constexpr std::string_view PRINTAGO_TOKEN_ENDPOINT = "http://dev.printago.io/token-validator";                //    DEV   //   
+//PRODUCTION// static constexpr std::string_view PRINTAGO_TOKEN_ENDPOINT = "http://app.printago.io/token-validator"; //PRODUCTION//
+
 void                   printago_ws_error(beefy::error_code ec, char const* what);
 
 //``````````````````````````````````````````````````
