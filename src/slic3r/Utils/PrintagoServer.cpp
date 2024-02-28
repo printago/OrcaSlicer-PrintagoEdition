@@ -504,11 +504,10 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             std::string token = parameters["token"];
             std::string url_base(PRINTAGO_TOKEN_ENDPOINT);
 
-            #ifdef NDEBUG
-            if (parameters.find("url_base") != parameters.end() && !parameters["url_base"].empty()) {
-                url_base = Http::url_decode(parameters["url_base"]);
-            }                                                                                                 
-            #endif
+            // ONLY FOR DEV USE - DISABLE FOR PRODUCTION
+            // if (parameters.find("url_base") != parameters.end() && !parameters["url_base"].empty()) {
+            //     url_base = Http::url_decode(parameters["url_base"]);
+            // }                                                                                                 
                  
             if (token.empty()) {
                 PostErrorMessage("", "", cmd.GetOriginalCommand(), "Unauthorized: No Token");
