@@ -290,7 +290,7 @@ void fix_model_by_win10_sdk(const std::string &path_src, const std::string &path
 		FILE *fout = boost::nowide::fopen(path_dst.c_str(), "wb");
 
 		Microsoft::WRL::ComPtr<ABI::Windows::Storage::Streams::IBuffer> buffer;
-		byte														   *buffer_ptr;
+		unsigned char												   *buffer_ptr;
 		bufferFactory->Create(65536 * 2048, buffer.GetAddressOf());
 		{
 			Microsoft::WRL::ComPtr<Windows::Storage::Streams::IBufferByteAccess> bufferByteAccess;
