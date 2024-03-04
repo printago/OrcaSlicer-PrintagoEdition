@@ -104,7 +104,7 @@ endif()
 
 # Create a slic3r executable
 # Process mainfests for various platforms.
-set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2022-2023 Li Jiang All Rights Reserved")
+set(MACOSX_BUNDLE_COPYRIGHT "Copyright(C) 2024 Printago All Rights Reserved")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/msw/OrcaSlicer.rc.in ${CMAKE_CURRENT_BINARY_DIR}/OrcaSlicer.rc @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/msw/OrcaSlicer.manifest.in ${CMAKE_CURRENT_BINARY_DIR}/OrcaSlicer.manifest @ONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform/osx/Info.plist.in ${CMAKE_CURRENT_BINARY_DIR}/Info.plist @ONLY)
