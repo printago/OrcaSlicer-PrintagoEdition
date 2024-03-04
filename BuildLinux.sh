@@ -77,7 +77,7 @@ then
     exit 0
 fi
 
-# Addtional Dev packages for OrcaSlicer
+# Addtional Dev packages for OrcaSlicerPE
 export REQUIRED_DEV_PACKAGES="libmspack-dev libgstreamerd-3-dev libsecret-1-dev libwebkit2gtk-4.0-dev libosmesa6-dev libssl-dev libcurl4-openssl-dev eglexternalplatform-dev libudev-dev libdbus-1-dev extra-cmake-modules texinfo"
 # libwebkit2gtk-4.1-dev ??
 export DEV_PACKAGES_COUNT=$(echo ${REQUIRED_DEV_PACKAGES} | wc -w)
@@ -182,7 +182,7 @@ then
         make deps -j$NCORES
         echo "done"
 
-        # rename wxscintilla # TODO: DeftDawg: Does OrcaSlicer need this?
+        # rename wxscintilla # TODO: DeftDawg: Does OrcaSlicerPE need this?
         # echo "[5/9] Renaming wxscintilla library..."
         # pushd destdir/usr/local/lib
         #     if [[ -z "$FOUND_GTK3_DEV" ]]
@@ -230,7 +230,7 @@ then
         
         # make Slic3r
         echo "[8/9] Building Slic3r..."
-        make -j$NCORES OrcaSlicer # Slic3r
+        make -j$NCORES OrcaSlicerPE # Slic3r
     popd
     ./run_gettext.sh
     echo "done"
