@@ -45,7 +45,7 @@ jobs:
           lookup-only: true
         
   build_deps: # call next step
-    name: Build Deps
+    name: Build Orca PE Deps 
     needs: [check_cache]
     uses: ./.github/workflows/build_deps.yml
     with:
