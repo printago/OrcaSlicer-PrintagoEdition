@@ -22,7 +22,7 @@ on:
 
 jobs:
   build_deps:
-    name: Build Deps
+    name: Build Orca PE Deps 
     if: inputs.build-deps-only || inputs.valid-cache != true
     runs-on: ${{ inputs.os }}
     env:
@@ -61,7 +61,7 @@ jobs:
         run: |
             choco install strawberryperl
             mkdir ${{ github.workspace }}/deps/build
-            mkdir ${{ github.workspace }}/deps/build/OrcaSlicer_dep
+            mkdir ${{ github.workspace }}/deps/build/OrcaSlicerPE_dep
             .\build_release_vs2022.bat deps
             .\build_release_vs2022.bat pack
             cd ${{ github.workspace }}/deps/build
@@ -73,7 +73,7 @@ jobs:
             brew install cmake git gettext automake texinfo
             brew list
             mkdir -p ${{ github.workspace }}/deps/build_${{ inputs.arch }}
-            mkdir -p ${{ github.workspace }}/deps/build_${{ inputs.arch }}/OrcaSlicer_dep_${{ inputs.arch }}
+            mkdir -p ${{ github.workspace }}/deps/build_${{ inputs.arch }}/OrcaSlicerPE_dep_${{ inputs.arch }}
             brew uninstall --ignore-dependencies zstd
             ./build_release_macos.sh -dp -a ${{ inputs.arch }} -t 10.15
             brew install zstd
@@ -95,7 +95,7 @@ jobs:
             sudo chown $USER -R ./
             ./BuildLinux.sh -dr
             cd deps/build
-            tar -czvf OrcaSlicer_dep_ubuntu_$(date +"%Y%m%d").tar.gz destdir
+            tar -czvf OrcaSlicerPE_dep_ubuntu_$(date +"%Y%m%d").tar.gz destdir
       
             
       # Upload Artifacts
@@ -103,25 +103,25 @@ jobs:
         if: inputs.os == 'macos-12'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_dep_mac_${{ inputs.arch }}_${{ env.date }}
-          path: ${{ github.workspace }}/deps/build_${{ inputs.arch }}/OrcaSlicer_dep*.tar.gz
+          name: OrcaSlicerPE_dep_mac_${{ inputs.arch }}_${{ env.date }}
+          path: ${{ github.workspace }}/deps/build_${{ inputs.arch }}/OrcaSlicerPE_dep*.tar.gz
 
       - name: Upload Windows artifacts
         if: inputs.os == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_dep_win64_${{ env.date }}
-          path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep*.zip
+          name: OrcaSlicerPE_dep_win64_${{ env.date }}
+          path: ${{ github.workspace }}/deps/build/OrcaSlicerPE_dep*.zip
 
       - name: Upload Ubuntu artifacts
         if: inputs.os == 'ubuntu-20.04'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_dep_ubuntu_${{ env.date }}
-          path: ${{ github.workspace }}/deps/build/OrcaSlicer_dep_ubuntu_*.tar.gz
+          name: OrcaSlicerPE_dep_ubuntu_${{ env.date }}
+          path: ${{ github.workspace }}/deps/build/OrcaSlicerPE_dep_ubuntu_*.tar.gz
           
   build_orca:
-    name: Build OrcaSlicer
+    name: Build OrcaSlicer PE
     needs: [build_deps]
     if: ${{ !cancelled() && !inputs.build-deps-only && (inputs.valid-cache == true && needs.build_deps.result == 'skipped') || (inputs.valid-cache != true && success()) }}
     uses: ./.github/workflows/build_orca.yml

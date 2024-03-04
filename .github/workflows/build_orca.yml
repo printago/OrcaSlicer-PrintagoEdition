@@ -16,7 +16,7 @@ on:
 
 jobs:
   build_orca:
-    name: Build OrcaSlicer
+    name: Build OrcaSlicer PE
     runs-on: ${{ inputs.os }}
     env:
       date:
@@ -79,8 +79,8 @@ jobs:
           brew install cmake git gettext tree
           brew list
           mkdir -p ${{ github.workspace }}/deps/build_${{inputs.arch}}
-          mkdir -p ${{ github.workspace }}/deps/build_${{inputs.arch}}/OrcaSlicer_dep_${{inputs.arch}}
-          tree ${{ github.workspace }}/deps/build_${{inputs.arch}}/OrcaSlicer_dep_${{inputs.arch}}
+          mkdir -p ${{ github.workspace }}/deps/build_${{inputs.arch}}/ _dep_${{inputs.arch}}
+          tree ${{ github.workspace }}/deps/build_${{inputs.arch}}/OrcaSlicerPE_dep_${{inputs.arch}}
 
       - name: Build slicer mac
         if: inputs.os == 'macos-12'
@@ -107,27 +107,27 @@ jobs:
           security import $CERTIFICATE_PATH -P $P12_PASSWORD -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k $P12_PASSWORD $KEYCHAIN_PATH
-          codesign --deep --force --verbose --options runtime --timestamp --entitlements ${{ github.workspace }}/scripts/disable_validation.entitlements --sign "$CERTIFICATE_ID" ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicer/OrcaSlicer.app
-          ln -s /Applications ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicer/Applications
-          hdiutil create -volname "OrcaSlicer" -srcfolder ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicer -ov -format UDZO OrcaSlicer_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
-          codesign --deep --force --verbose --options runtime --timestamp --entitlements ${{ github.workspace }}/scripts/disable_validation.entitlements --sign "$CERTIFICATE_ID" OrcaSlicer_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
+          codesign --deep --force --verbose --options runtime --timestamp --entitlements ${{ github.workspace }}/scripts/disable_validation.entitlements --sign "$CERTIFICATE_ID" ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicerPE/OrcaSlicerPE.app
+          ln -s /Applications ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicerPE/Applications
+          hdiutil create -volname "OrcaSlicerPE" -srcfolder ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicerPE -ov -format UDZO OrcaSlicerPE_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
+          codesign --deep --force --verbose --options runtime --timestamp --entitlements ${{ github.workspace }}/scripts/disable_validation.entitlements --sign "$CERTIFICATE_ID" OrcaSlicerPE_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
           xcrun notarytool store-credentials "notarytool-profile" --apple-id "${{ secrets.APPLE_DEV_ACCOUNT }}" --team-id "${{ secrets.TEAM_ID }}" --password "${{ secrets.APP_PWD }}"
-          xcrun notarytool submit "OrcaSlicer_Mac_${{inputs.arch}}_${{ env.ver }}.dmg" --keychain-profile "notarytool-profile" --wait
-          xcrun stapler staple OrcaSlicer_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
+          xcrun notarytool submit "OrcaSlicerPE_Mac_${{inputs.arch}}_${{ env.ver }}.dmg" --keychain-profile "notarytool-profile" --wait
+          xcrun stapler staple OrcaSlicerPE_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
 
       - name: Create DMG without notary
         if: github.ref != 'refs/heads/main' && inputs.os == 'macos-12'
         working-directory: ${{ github.workspace }}
         run: |
-          ln -s /Applications ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicer/Applications
-          hdiutil create -volname "OrcaSlicer" -srcfolder ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicer -ov -format UDZO OrcaSlicer_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
+          ln -s /Applications ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicerPE/Applications
+          hdiutil create -volname "OrcaSlicerPE" -srcfolder ${{ github.workspace }}/build_${{inputs.arch}}/OrcaSlicerPE -ov -format UDZO OrcaSlicerPE_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
 
       - name: Upload artifacts mac
         if: inputs.os == 'macos-12'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_Mac_${{inputs.arch}}_${{ env.ver }}
-          path: ${{ github.workspace }}/OrcaSlicer_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
+          name: OrcaSlicerPE_Mac_${{inputs.arch}}_${{ env.ver }}
+          path: ${{ github.workspace }}/OrcaSlicerPE_Mac_${{inputs.arch}}_${{ env.ver }}.dmg
 
 # Windows
       - name: setup MSVC
@@ -155,7 +155,7 @@ jobs:
         if: inputs.os == 'windows-latest'
         working-directory: ${{ github.workspace }}/build
         shell: cmd
-        run: '"C:/Program Files/7-Zip/7z.exe" a -tzip OrcaSlicer_Windows_${{ env.ver }}_portable.zip ${{ github.workspace }}/build/OrcaSlicer'
+        run: '"C:/Program Files/7-Zip/7z.exe" a -tzip OrcaSlicerPE_Windows_${{ env.ver }}_portable.zip ${{ github.workspace }}/build/OrcaSlicerPE'
 
       - name: Pack PDB
         if: inputs.os == 'windows-latest'
@@ -167,15 +167,15 @@ jobs:
         if: inputs.os == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_Windows_${{ env.ver }}_portable
-          path: ${{ github.workspace }}/build/OrcaSlicer_Windows_${{ env.ver }}_portable.zip
+          name: OrcaSlicerPE_Windows_${{ env.ver }}_portable
+          path: ${{ github.workspace }}/build/OrcaSlicerPE_Windows_${{ env.ver }}_portable.zip
 
       - name: Upload artifacts Win installer
         if: inputs.os == 'windows-latest'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_Windows_${{ env.ver }}
-          path: ${{ github.workspace }}/build/OrcaSlicer*.exe
+          name: OrcaSlicerPE_Windows_${{ env.ver }}
+          path: ${{ github.workspace }}/build/OrcaSlicerPE*.exe
 
       - name: Upload artifacts Win PDB
         if: inputs.os == 'windows-latest'
@@ -210,11 +210,11 @@ jobs:
         shell: bash
         run: |
           ./BuildLinux.sh -isr
-          chmod +x ./build/OrcaSlicer_ubu64.AppImage
+          chmod +x ./build/OrcaSlicerPE_ubu64.AppImage
         
       - name: Upload artifacts Ubuntu
         if: inputs.os == 'ubuntu-20.04'
         uses: actions/upload-artifact@v3
         with:
-          name: OrcaSlicer_Linux_${{ env.ver }}
-          path: './build/OrcaSlicer_ubu64.AppImage'
+          name: OrcaSlicerPE_Linux_${{ env.ver }}
+          path: './build/OrcaSlicerPE_ubu64.AppImage'
