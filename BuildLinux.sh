@@ -230,7 +230,7 @@ then
         
         # make Slic3r
         echo "[8/9] Building Slic3r..."
-        make -j$NCORES OrcaSlicer # Slic3r
+        make -j$NCORES OrcaSlicerPE # Slic3r
     popd
     ./run_gettext.sh
     echo "done"
