@@ -210,7 +210,6 @@ jobs:
         shell: bash
         run: |
           ./BuildLinux.sh -isr
-          mv -n ./build/OrcaSlicerPE_Linux_V${{ env.ver_pure }}.AppImage ./build/OrcaSlicerPE_Linux_${{ env.ver }}.AppImage
           chmod +x ./build/OrcaSlicerPE_Linux_${{ env.ver }}.AppImage
         
       - name: Upload artifacts Ubuntu
