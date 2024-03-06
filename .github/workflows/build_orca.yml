@@ -210,11 +210,12 @@ jobs:
         shell: bash
         run: |
           ./BuildLinux.sh -isr
-          chmod +x ./build/OrcaSlicerPE_ubu64.AppImage
+          mv -n ./build/OrcaSlicerPE_Linux_V${{ env.ver_pure }}.AppImage ./build/OrcaSlicerPE_Linux_${{ env.ver }}.AppImage
+          chmod +x ./build/OrcaSlicerPE_Linux_${{ env.ver }}.AppImage
         
       - name: Upload artifacts Ubuntu
         if: inputs.os == 'ubuntu-20.04'
         uses: actions/upload-artifact@v3
         with:
           name: OrcaSlicerPE_Linux_${{ env.ver }}
-          path: './build/OrcaSlicerPE_ubu64.AppImage'
+          path: './build/OrcaSlicerPE_Linux_${{ env.ver }}.AppImage'
