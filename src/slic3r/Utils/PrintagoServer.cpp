@@ -663,6 +663,10 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
 
             if (parameters.count("bed_type")) {
                 PBJob::bed_type = PBJob::StringToBedType(parameters["bed_type"]);
+                if (PBJob::bed_type == BedType::btDefault) {
+                    PostErrorMessage(printerId, action, originalCommand, "invalid bed_type (cool_plate, eng_plate, warm_plate, textured_pei)");
+                    return false;
+                }
             } else {
                 PostErrorMessage(printerId, action, originalCommand, "missing bed_type (cool_plate, eng_plate, warm_plate, textured_pei)");
                 return false;
@@ -734,7 +738,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
 
             wxGetApp().CallAfter([&]() {
                 wxGetApp().mainframe->select_tab(1);
-                wxGetApp().plater()->reset();
+                wxGetApp().plater()->reset();  //clear the plater, clear plates, and set plate to idx=0
 
                 actionDetail = wxString::Format("slice_config: %s", PBJob::localFile.GetFullPath());
 
@@ -744,6 +748,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 ImportPrintagoConfigs();
                 SetPrintagoConfigs();
                 wxGetApp().plater()->sidebar().on_bed_type_change(PBJob::bed_type);
+                wxGetApp().plater()->get_partplate_list().get_curr_plate()->set_bed_type(PBJob::bed_type);
 
                 try {
                     if (!PBJob::localFile.GetExt().MakeUpper().compare("3MF")) {
