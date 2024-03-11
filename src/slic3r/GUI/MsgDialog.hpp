@@ -86,6 +86,11 @@ struct MsgDialog : DPIDialog
     {
         SendPrintagoMessage();
 
+        const auto message = m_message.Upper();
+        if (message.starts_with("ARE YOU SURE")) {
+            return wxID_YES;
+        }
+
         //send in this order, depending which buttons are present.
         //we assume we want a no/cancel but an "OK" (or even "YES" may be expected from the caller).
         return (m_style & wxCANCEL) ? wxID_CANCEL :

@@ -165,6 +165,7 @@ public:
     bool ParseCommand(json command);
     void OnSlicingCompleted(SlicingProcessCompletedEvent::StatusType slicing_result);
     void OnPrintJobSent(wxString printerId, bool success);
+    void RemoveMergedProcessOverrideConfig();
 
     void PostJobUpdateMessage();
     void PostDialogMessage(const wxString& dialogType, const wxString& dialogHeadline, const wxString& dialogMessage);

@@ -176,6 +176,7 @@ void PrintagoDirector::PostErrorMessage(const wxString& printer_id,
                                         const bool shouldUnblock)
 {
     if (!PBJob::CanProcessJob() && shouldUnblock) {
+        RemoveMergedProcessOverrideConfig();
         PBJob::UnblockJobProcessing();
     }
 
@@ -950,7 +951,7 @@ void PrintagoDirector::OverridePrintSettings()
     wxFileName printSettingsPath    = PBJob::configFiles["print"].GetFullPath();
     wxFileName overrideSettingsPath = PBJob::configFiles["print_override"].GetFullPath();
     wxFileName printerSettingsPath  = PBJob::configFiles["printer"].GetFullPath();
-    wxString   newProfileName       = printSettingsPath.GetName().ToStdString() + "-printago-" + PBJob::jobId.Right(6);
+    wxString   newProfileName       = Http::url_decode(printSettingsPath.GetName().ToStdString()) + "-printago-" + PBJob::jobId.Right(6);
 
     // Load JSON data from files
     std::ifstream printSettingsFile(printSettingsPath.GetFullPath().ToStdString());
@@ -1448,7 +1449,6 @@ bool PrintagoDirector::DownloadFileFromURL(const wxString url, const wxFileName&
 
 void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusType slicing_result)
 {
-    // in case we got here by mistake and there's nothing we're trying to process; return silently.
     if (PBJob::printerId.IsEmpty() || PBJob::CanProcessJob()) {
         PBJob::UnblockJobProcessing();
         return;
@@ -1516,16 +1516,22 @@ void PrintagoDirector::OnPrintJobSent(wxString printerId, bool success)
     const json command_copy = PBJob::command; 
     const wxString printerId_copy = PBJob::printerId;
 
-    if(!PBJob::configFiles["print_override"].GetFullPath().IsEmpty()) {
-        //when we overrode the print settings, we replaced the ["print"] file with a new one.
-        //this should already be selected in the UI, but we need to re-select it here to ensure we delete the right one.
-        wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(PBJob::configFiles["print"].GetName().ToStdString());
-        wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(PBJob::configFiles["print"].GetName().ToStdString(), true);
-    }
+    RemoveMergedProcessOverrideConfig();
     PBJob::UnblockJobProcessing(); // unblock before notifying the client of the success.
 
     PostSuccessMessage(printerId_copy, "start_print_bbl", command_copy, wxString::Format("print sent to: %s", printerId_copy));
 }
+
+void PrintagoDirector::RemoveMergedProcessOverrideConfig()
+{
+    if (!PBJob::configFiles["print_override"].GetFullPath().IsEmpty()) {
+        // when we overrode the print settings, we replaced the ["print"] file with a new one.
+        // this should already be selected in the UI, but we need to re-select it here to ensure we delete the right one.
+        wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(PBJob::configFiles["print"].GetName().ToStdString());
+        wxGetApp().get_tab(Preset::TYPE_PRINT)->select_preset(PBJob::configFiles["print"].GetName().ToStdString(), true);
+    }
+}
+
 
 bool PrintagoDirector::ValidateToken(const std::string& token, const std::string& url_base)
 {
