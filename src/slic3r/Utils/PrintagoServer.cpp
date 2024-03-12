@@ -169,10 +169,10 @@ PrintagoDirector::~PrintagoDirector()
     delete m_select_machine_dlg;
 }
 
-void PrintagoDirector::PostErrorMessage(const wxString& printer_id,
-                                        const wxString& localCommand,
-                                        const json&     command,
-                                        const wxString& errorDetail, 
+void PrintagoDirector::PostErrorMessage(const wxString printer_id,
+                                        const wxString localCommand,
+                                        const json     command,
+                                        const wxString errorDetail, 
                                         const bool shouldUnblock)
 {
     if (!PBJob::CanProcessJob() && shouldUnblock) {
@@ -216,7 +216,7 @@ void PrintagoDirector::PostJobUpdateMessage()
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::PostResponseMessage(const wxString& printer_id, const json& responseData, const json& command)
+void PrintagoDirector::PostResponseMessage(const wxString printer_id, const json responseData, const json command)
 {
     auto resp = std::make_unique<PrintagoResponse>();
     resp->SetMessageType("status");
@@ -227,10 +227,10 @@ void PrintagoDirector::PostResponseMessage(const wxString& printer_id, const jso
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::PostSuccessMessage(const wxString& printer_id,
-                                          const wxString& localCommand,
-                                          const json&     command,
-                                          const wxString& localCommandDetail)
+void PrintagoDirector::PostSuccessMessage(const wxString printer_id,
+                                          const wxString localCommand,
+                                          const json     command,
+                                          const wxString localCommandDetail)
 {
     json responseData;
     responseData["local_command"]        = localCommand.ToStdString();
@@ -246,7 +246,7 @@ void PrintagoDirector::PostSuccessMessage(const wxString& printer_id,
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::PostStatusMessage(const wxString& printer_id, const json& statusData, const json& command)
+void PrintagoDirector::PostStatusMessage(const wxString printer_id, const json statusData, const json command)
 {
     auto resp = std::make_unique<PrintagoResponse>();
     resp->SetMessageType("status");
@@ -257,7 +257,7 @@ void PrintagoDirector::PostStatusMessage(const wxString& printer_id, const json&
     _PostResponse(*resp);
 }
 //if it's the special ones and we're blocking then send a PrintagoError, and unblock the UI.
-void PrintagoDirector::PostDialogMessage(const wxString& dialogType, const wxString& dialogHeadline, const wxString& dialogMessage)
+void PrintagoDirector::PostDialogMessage(const wxString dialogType, const wxString dialogHeadline, const wxString dialogMessage)
 {
     if (!server || !server->get_session()) {
                return;
@@ -291,7 +291,7 @@ void PrintagoDirector::PostDialogMessage(const wxString& dialogType, const wxStr
     _PostResponse(*resp);
 }
 
-void PrintagoDirector::_PostResponse(const PrintagoResponse& response) const
+void PrintagoDirector::_PostResponse(const PrintagoResponse response) const
 {
     wxDateTime now = wxDateTime::Now();
     now.MakeUTC();
@@ -503,12 +503,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
     if (!commandType.compare("meta")) {
         if (!action.compare("init")) {
             std::string token = parameters["token"];
-            std::string url_base(PRINTAGO_TOKEN_ENDPOINT);
-
-            // ONLY FOR DEV USE - DISABLE FOR PRODUCTION
-            // if (parameters.find("url_base") != parameters.end() && !parameters["url_base"].empty()) {
-            //     url_base = Http::url_decode(parameters["url_base"]);
-            // }                                                                                                 
+            std::string url_base(PRINTAGO_BASE_URL);
                  
             if (token.empty()) {
                 PostErrorMessage("", "", cmd.GetOriginalCommand(), "Unauthorized: No Token");

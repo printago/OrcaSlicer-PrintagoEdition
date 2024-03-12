@@ -24,8 +24,7 @@ namespace Slic3r {
 
 static constexpr short PRINTAGO_PORT = 33647;
 
-//    DEV   // static constexpr std::string_view PRINTAGO_TOKEN_ENDPOINT = "https://dev.printago.io";                // DEV //
-static constexpr std::string_view PRINTAGO_TOKEN_ENDPOINT = "https://app.printago.io"; //PRODUCTION//
+static constexpr std::string_view PRINTAGO_BASE_URL = "https://app.printago.io"; 
 
 void                   printago_ws_error(beefy::error_code ec, char const* what);
 
@@ -168,7 +167,7 @@ public:
     void RemoveMergedProcessOverrideConfig();
 
     void PostJobUpdateMessage();
-    void PostDialogMessage(const wxString& dialogType, const wxString& dialogHeadline, const wxString& dialogMessage);
+    void PostDialogMessage(const wxString dialogType, const wxString dialogHeadline, const wxString dialogMessage);
 
     void ResetMachineDialog()
     {
@@ -188,19 +187,19 @@ private:
 
     GUI::SelectMachineDialog* m_select_machine_dlg = nullptr;
 
-    void PostStatusMessage(const wxString& printer_id, const json& statusData, const json& command = {});
-    void PostResponseMessage(const wxString& printer_id, const json& responseData, const json& command = {});
-    void PostSuccessMessage(const wxString& printer_id,
-                            const wxString& localCommand,
-                            const json&     command            = {},
-                            const wxString& localCommandDetail = "");
-    void PostErrorMessage(const wxString& printer_id,
-                          const wxString& localCommand,
-                          const json&     command       = {},
-                          const wxString& errorDetail   = "",
+    void PostStatusMessage(const wxString printer_id, const json statusData, const json command = {});
+    void PostResponseMessage(const wxString printer_id, const json responseData, const json command = {});
+    void PostSuccessMessage(const wxString printer_id,
+                            const wxString localCommand,
+                            const json     command            = {},
+                            const wxString localCommandDetail = "");
+    void PostErrorMessage(const wxString printer_id,
+                          const wxString localCommand,
+                          const json     command       = {},
+                          const wxString errorDetail   = "",
                           const bool      shouldUnblock = false);
 
-    void _PostResponse(const PrintagoResponse& response) const;
+    void _PostResponse(const PrintagoResponse response) const;
 
     bool ValidatePrintagoCommand(const PrintagoCommand& cmd);
     bool ProcessPrintagoCommand(const PrintagoCommand& command);
