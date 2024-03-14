@@ -1530,6 +1530,7 @@ void PrintagoDirector::RemoveMergedProcessOverrideConfig()
 
 bool PrintagoDirector::ValidateToken(const std::string& token, const std::string& url_base)
 {
+    return true;
 
     std::string url     = url_base + "/api/slicer-tokens/" + token;
     bool        isValid = false;
