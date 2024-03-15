@@ -1148,13 +1148,13 @@ void CalibUtils::send_to_print(const CalibInfo &calib_info, wxString &error_mess
     print_job->m_access_code    = obj_->get_access_code();
 
 
-#if !BBL_RELEASE_TO_PUBLIC
-    print_job->m_local_use_ssl_for_ftp = wxGetApp().app_config->get("enable_ssl_for_ftp") == "true" ? true : false;
-    print_job->m_local_use_ssl_for_mqtt = wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false;
-#else
+// #if !BBL_RELEASE_TO_PUBLIC
+//     print_job->m_local_use_ssl_for_ftp = wxGetApp().app_config->get("enable_ssl_for_ftp") == "true" ? true : false;
+//     print_job->m_local_use_ssl_for_mqtt = wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false;
+// #else
     print_job->m_local_use_ssl_for_ftp = obj_->local_use_ssl_for_ftp;
     print_job->m_local_use_ssl_for_mqtt = obj_->local_use_ssl_for_mqtt;
-#endif
+// #endif
 
     print_job->connection_type  = obj_->connection_type();
     print_job->cloud_print_only = obj_->is_support_cloud_print_only;

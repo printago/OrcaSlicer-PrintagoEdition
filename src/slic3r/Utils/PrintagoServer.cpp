@@ -1543,8 +1543,9 @@ void PrintagoDirector::RemoveMergedProcessOverrideConfig()
 
 bool PrintagoDirector::ValidateToken(const std::string& token, const std::string& url_base)
 {
+#if !BBL_RELEASE_TO_PUBLIC
     return true;
-
+#endif
     std::string url     = url_base + "/api/slicer-tokens/" + token;
     bool        isValid = false;
 
