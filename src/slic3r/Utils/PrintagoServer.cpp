@@ -657,6 +657,8 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             PBJob::bbl_do_bed_leveling = parameters.contains("do_bed_leveling") && parameters["do_bed_leveling"].get<bool>();
             PBJob::bbl_do_flow_cali    = parameters.contains("do_flow_cali") && parameters["do_flow_cali"].get<bool>();
 
+            PBJob::ams_slot            = parameters.contains("ams_slot") ? parameters["ams_slot"] : 0;
+
             if (parameters.count("bed_type")) {
                 PBJob::bed_type = PBJob::StringToBedType(parameters["bed_type"]);
                 if (PBJob::bed_type == BedType::btDefault) {
@@ -702,8 +704,6 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                 return false;
             }
 
-            // Do the configuring here: this allows 3MF files to load, then we can configure the slicer and override the 3MF conf settings
-            // from what Printago sent.
             wxFileName localPrinterConf, localFilamentConf, localPrintConf;
             if (SavePrintagoFile(printerConfUrl, localPrinterConf) && SavePrintagoFile(filamentConfUrl, localFilamentConf) &&
                 SavePrintagoFile(printConfUrl, localPrintConf)) {
@@ -751,6 +751,8 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
                         // The last 'true' tells the function to not ask the user to confirm the load; save any existing work.
                         wxGetApp().plater()->load_project(PBJob::localFile.GetFullPath(), "-", true);
                         SetPrintagoConfigs(); // since the 3MF may have it's own configs that get set on load.
+                        wxGetApp().plater()->sidebar().on_bed_type_change(PBJob::bed_type);
+                        wxGetApp().plater()->get_partplate_list().get_curr_plate()->set_bed_type(PBJob::bed_type);
                     } else {
                         std::vector<std::string> filePathArray;
                         filePathArray.push_back(PBJob::localFile.GetFullPath().ToStdString());
@@ -1470,7 +1472,12 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
         m_select_machine_dlg = new SelectMachineDialog(wxGetApp().plater());
     
     m_select_machine_dlg->set_print_type(FROM_NORMAL);
-     m_select_machine_dlg->prepare(0);
+    m_select_machine_dlg->set_default_normal();
+    m_select_machine_dlg->prepare(0);
+    if (PBJob::use_ams && wxGetApp().getDeviceManager()->get_my_machine(PBJob::printerId.ToStdString())) {
+        
+    }
+    
 
     m_select_machine_dlg->SetPrinter(PBJob::printerId.ToStdString());
     auto selectedPrinter = wxGetApp().getDeviceManager()->get_selected_machine();
@@ -1480,6 +1487,13 @@ void PrintagoDirector::OnSlicingCompleted(SlicingProcessCompletedEvent::StatusTy
 
     if (selectedPrinter->has_ams()) {
         m_select_machine_dlg->SetCheckboxOption("use_ams", PBJob::use_ams);
+        if (PBJob::use_ams) {
+            if (!PBJob::localFile.GetExt().MakeUpper().compare("3MF")) {
+                m_select_machine_dlg->PrintagoMapAms(0, true); // set AMS 1:1
+            } else {
+                m_select_machine_dlg->PrintagoMapAms(PBJob::ams_slot, false); // map all filaments to specified slot.
+            }
+        } 
     } else {
         m_select_machine_dlg->SetCheckboxOption("use_ams", false);
     }

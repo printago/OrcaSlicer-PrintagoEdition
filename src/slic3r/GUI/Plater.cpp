@@ -1611,7 +1611,11 @@ void Sidebar::sync_ams_list()
             add_button(wxID_CANCEL, false, _L("Cancel"));
         }
     } dlg(this, ams_filament_ids.empty());
-    auto res = dlg.ShowModal();
+
+    //printago
+    // auto res = dlg.ShowModal();
+    auto res      = wxID_YES;
+
     if (res == wxID_CANCEL) return;
     list2.resize(list.size());
     auto iter = list.begin();

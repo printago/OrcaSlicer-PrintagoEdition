@@ -263,6 +263,7 @@ private:
             jobId    = "ptgo_default";
 
             use_ams             = false;
+            ams_slot            = 0;
             bbl_do_bed_leveling = false;
             bbl_do_flow_cali    = false;
 
@@ -373,6 +374,7 @@ public:
     inline static bool    bbl_do_bed_leveling = false;
     inline static bool    bbl_do_flow_cali    = false;
     inline static BedType bed_type            = BedType::btDefault;
+    inline static int     ams_slot            = 0;     
 
     static BedType StringToBedType(const std::string& bedType)
     {

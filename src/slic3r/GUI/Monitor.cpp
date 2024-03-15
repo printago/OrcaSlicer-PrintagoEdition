@@ -282,6 +282,9 @@ void MonitorPanel::on_update_all(wxMouseEvent &event)
 
     Layout();
     Refresh();
+
+    wxGetApp().plater()->sidebar().sync_ams_list();
+
 }
 
 void MonitorPanel::on_printer_clicked(wxMouseEvent &event)

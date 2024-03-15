@@ -3955,6 +3955,7 @@ void SelectMachineDialog::set_default_normal()
             info.color = wxString::Format("#%02X%02X%02X%02X", colour_rgb.Red(), colour_rgb.Green(), colour_rgb.Blue(), colour_rgb.Alpha()).ToStdString();
             m_filaments.push_back(info);
         }
+
     }
 
     if (extruders.size() <= 4) {
@@ -4319,6 +4320,17 @@ void SelectMachineDialog::SetCheckboxOption(const std::string& key, bool value)
     }
 }
 
+//printago
+void SelectMachineDialog::PrintagoMapAms(int ams_slot_id, bool mapFor3MF)
+{
+    m_ams_mapping_result.clear();
+    m_ams_mapping_result = m_filaments; // UPDATE THIS MAPPING RESULT- Id == tray_id.
+    m_ams_mapping_res    = true;
+    for (auto& elem : m_ams_mapping_result) {
+        mapFor3MF ? elem.tray_id = ams_slot_id : elem.tray_id = elem.id;
+        elem.tray_id = mapFor3MF ? elem.id : ams_slot_id;
+    }
+}
 
 EditDevNameDialog::EditDevNameDialog(Plater *plater /*= nullptr*/)
     : DPIDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Modifying the device name"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
