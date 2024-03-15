@@ -1611,7 +1611,11 @@ void Sidebar::sync_ams_list()
             add_button(wxID_CANCEL, false, _L("Cancel"));
         }
     } dlg(this, ams_filament_ids.empty());
-    auto res = dlg.ShowModal();
+
+    //printago
+    // auto res = dlg.ShowModal();
+    auto res      = wxID_YES;
+
     if (res == wxID_CANCEL) return;
     list2.resize(list.size());
     auto iter = list.begin();
@@ -11682,12 +11686,12 @@ int Plater::send_gcode(int plate_idx, Export3mfProgressFn proFn)
     }
 
     SaveStrategy strategy = SaveStrategy::Silence | SaveStrategy::SkipModel | SaveStrategy::WithGcode;
-#if !BBL_RELEASE_TO_PUBLIC
-    //only save model in QA environment
-    std::string sel = get_app_config()->get("iot_environment");
-    if (sel == ENV_PRE_HOST)
-        strategy = SaveStrategy::Silence | SaveStrategy::SplitModel | SaveStrategy::WithGcode;
-#endif
+// #if !BBL_RELEASE_TO_PUBLIC
+//     //only save model in QA environment
+//     std::string sel = get_app_config()->get("iot_environment");
+//     if (sel == ENV_PRE_HOST)
+//         strategy = SaveStrategy::Silence | SaveStrategy::SplitModel | SaveStrategy::WithGcode;
+// #endif
 
     result = export_3mf(p->m_print_job_data._3mf_path, strategy, plate_idx, proFn);
 

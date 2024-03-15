@@ -5205,11 +5205,11 @@ bool DeviceManager::set_selected_machine(std::string dev_id, bool need_disconnec
                 if (m_agent) {
                     if (!need_disconnect) {m_agent->disconnect_printer();}
                     it->second->reset();
-#if !BBL_RELEASE_TO_PUBLIC
-                    it->second->connect(false, Slic3r::GUI::wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false);
-#else
+// #if !BBL_RELEASE_TO_PUBLIC
+//                     it->second->connect(false, Slic3r::GUI::wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false);
+// #else
                     it->second->connect(false, it->second->local_use_ssl_for_mqtt);
-#endif
+// #endif
                     it->second->set_lan_mode_connection_state(true);
                 }
             }
@@ -5228,11 +5228,11 @@ bool DeviceManager::set_selected_machine(std::string dev_id, bool need_disconnec
                     BOOST_LOG_TRIVIAL(info) << "static: set_selected_machine: same dev_id = empty";
                     m_agent->set_user_selected_machine("");
                     it->second->reset();
-#if !BBL_RELEASE_TO_PUBLIC
-                    it->second->connect(false, Slic3r::GUI::wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false);
-#else
+// #if !BBL_RELEASE_TO_PUBLIC
+//                     it->second->connect(false, Slic3r::GUI::wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false);
+// #else
                     it->second->connect(false, it->second->local_use_ssl_for_mqtt);
-#endif
+// #endif
                     it->second->set_lan_mode_connection_state(true);
                 }
             }

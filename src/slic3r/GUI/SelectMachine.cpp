@@ -2627,11 +2627,11 @@ void SelectMachineDialog::connect_printer_mqtt()
         show_status(PrintDialogStatus::PrintStatusSending);
         m_status_bar->disable_cancel_button();
         m_status_bar->set_status_text(_L("Connecting to the printer. Unable to cancel during the connection process."));
-#if !BBL_RELEASE_TO_PUBLIC
-        obj_->connect(false, wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false);
-#else
+// #if !BBL_RELEASE_TO_PUBLIC
+//         obj_->connect(false, wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false);
+// #else
         obj_->connect(false, obj_->local_use_ssl_for_mqtt);
-#endif
+// #endif
     }
     else {
         on_send_print();
@@ -2743,13 +2743,13 @@ void SelectMachineDialog::on_send_print()
     m_print_job->m_dev_ip = obj_->dev_ip;
     m_print_job->m_ftp_folder = obj_->get_ftp_folder();
     m_print_job->m_access_code = obj_->get_access_code();
-#if !BBL_RELEASE_TO_PUBLIC
-    m_print_job->m_local_use_ssl_for_ftp = wxGetApp().app_config->get("enable_ssl_for_ftp") == "true" ? true : false;
-    m_print_job->m_local_use_ssl_for_mqtt = wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false;
-#else
+// #if !BBL_RELEASE_TO_PUBLIC
+//     m_print_job->m_local_use_ssl_for_ftp = wxGetApp().app_config->get("enable_ssl_for_ftp") == "true" ? true : false;
+//     m_print_job->m_local_use_ssl_for_mqtt = wxGetApp().app_config->get("enable_ssl_for_mqtt") == "true" ? true : false;
+// #else
     m_print_job->m_local_use_ssl_for_ftp = obj_->local_use_ssl_for_ftp;
     m_print_job->m_local_use_ssl_for_mqtt = obj_->local_use_ssl_for_mqtt;
-#endif
+// #endif
     m_print_job->connection_type = obj_->connection_type();
     m_print_job->cloud_print_only = obj_->is_support_cloud_print_only;
 
@@ -3955,6 +3955,7 @@ void SelectMachineDialog::set_default_normal()
             info.color = wxString::Format("#%02X%02X%02X%02X", colour_rgb.Red(), colour_rgb.Green(), colour_rgb.Blue(), colour_rgb.Alpha()).ToStdString();
             m_filaments.push_back(info);
         }
+
     }
 
     if (extruders.size() <= 4) {
@@ -4319,6 +4320,17 @@ void SelectMachineDialog::SetCheckboxOption(const std::string& key, bool value)
     }
 }
 
+//printago
+void SelectMachineDialog::PrintagoMapAms(int ams_slot_id, bool mapFor3MF)
+{
+    m_ams_mapping_result.clear();
+    m_ams_mapping_result = m_filaments; // UPDATE THIS MAPPING RESULT- Id == tray_id.
+    m_ams_mapping_res    = true;
+    for (auto& elem : m_ams_mapping_result) {
+        mapFor3MF ? elem.tray_id = ams_slot_id : elem.tray_id = elem.id;
+        elem.tray_id = mapFor3MF ? elem.id : ams_slot_id;
+    }
+}
 
 EditDevNameDialog::EditDevNameDialog(Plater *plater /*= nullptr*/)
     : DPIDialog(static_cast<wxWindow *>(wxGetApp().mainframe), wxID_ANY, _L("Modifying the device name"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)

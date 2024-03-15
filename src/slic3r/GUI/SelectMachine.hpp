@@ -475,6 +475,7 @@ public:
     //Printago
     void SetPrinter(const std::string& printerLastSelect);
     void SetCheckboxOption(const std::string& key, bool value);
+    void PrintagoMapAms(int ams_slot_id = 0, bool mapFor3MF = false);
 };
 
 wxDECLARE_EVENT(EVT_FINISHED_UPDATE_MACHINE_LIST, wxCommandEvent);
