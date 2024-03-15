@@ -656,8 +656,7 @@ bool PrintagoDirector::ProcessPrintagoCommand(const PrintagoCommand& cmd)
             PBJob::use_ams             = printer->has_ams() && parameters.contains("use_ams") && parameters["use_ams"].get<bool>();
             PBJob::bbl_do_bed_leveling = parameters.contains("do_bed_leveling") && parameters["do_bed_leveling"].get<bool>();
             PBJob::bbl_do_flow_cali    = parameters.contains("do_flow_cali") && parameters["do_flow_cali"].get<bool>();
-
-            PBJob::ams_slot            = parameters.contains("ams_slot") ? parameters["ams_slot"] : 0;
+            PBJob::ams_slot            = parameters.contains("ams_slot") ? parameters["ams_slot"].get<int>() : 0;
 
             if (parameters.count("bed_type")) {
                 PBJob::bed_type = PBJob::StringToBedType(parameters["bed_type"]);
